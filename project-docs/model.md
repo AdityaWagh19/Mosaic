@@ -221,6 +221,32 @@ For a seeded innovation: the first timestep at which agent `i`'s value on
 dimension 0 exceeds a threshold of 0.2 above its initial value.
 Adoption fraction `A(t)` = fraction of agents that have adopted by timestep `t`.
 
+### 8.6 Influence Residual Score (for Experiment 2 — Prestige Effect)
+
+Measures how much the final population accent resembles each agent's *initial*
+accent — a direct proxy for how much that agent's starting accent "guided" the
+population consensus.
+
+```
+s_i = −‖a_i(0) − μ_final‖
+```
+
+Where:
+- `a_i(0)` = agent i's accent vector at timestep 0
+- `μ_final` = mean accent vector across all agents at convergence
+- The negation means higher `s_i` = population converged *toward* where agent i started
+
+**Why this is a valid influence measure:** In an asymmetric, prestige-weighted
+system, high-centrality agents speak to more listeners and shift the population
+centroid toward their own accent. An agent with high influence leaves a smaller
+residual between their initial accent and the final consensus.
+
+**Usage:** Compute `s_i` for all agents in a run. Compute Spearman r between
+`centrality(i)` and `s_i`. Average r across 25 runs per γ condition.
+
+**Expected result:** Spearman r increases with γ (stronger when prestige weighting
+is higher); r ≈ 0 when γ = 0 (no prestige effect).
+
 ---
 
 ## 9. Simulation Run Output
