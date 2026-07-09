@@ -1,1 +1,0 @@
-Mosaic — A multi-agent simulation framework that models how accents evolve, spread, and blend across populations over time.
