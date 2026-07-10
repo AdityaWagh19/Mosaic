@@ -33,7 +33,8 @@ log = logging.getLogger(__name__)
 
 # Base directory for runs
 RUNS_ROOT = Path("runs")
-RUNS_ROOT.mkdir(exist_ok=True)
+import os
+os.makedirs(str(RUNS_ROOT), exist_ok=True)
 
 app = FastAPI(title="Mosaic API", version="1.0.0")
 
