@@ -127,7 +127,7 @@ def run_monte_carlo(config: SimConfig) -> pd.DataFrame:
     df = pd.DataFrame(rows, columns=_SUMMARY_COLUMNS)
 
     # Write summary CSV
-    os.makedirs(_RESULTS_ROOT, exist_ok=True)
+    os.makedirs(str(_RESULTS_ROOT), exist_ok=True)
     summary_path = _RESULTS_ROOT / "summary.csv"
     df.to_csv(summary_path, index=False)
     logger.info(

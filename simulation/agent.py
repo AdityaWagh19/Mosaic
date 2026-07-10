@@ -23,7 +23,7 @@ Design notes
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import mesa
 import numpy as np
@@ -50,10 +50,6 @@ class AccentAgent(mesa.Agent):
         Accent vector at t=0.  Read-only snapshot used by the influence
         residual score metric (model.md §8.6, Experiment 2).
     """
-
-    # Narrow the type of self.model inherited from mesa.Agent (typed as mesa.Model)
-    # so pyrefly resolves .config and .rng correctly.
-    model: "MosaicModel"
 
     def __init__(
         self,
@@ -92,12 +88,16 @@ class AccentAgent(mesa.Agent):
         diff = speaker.accent - self.accent
         distance = float(np.linalg.norm(diff))
 
+        # Cast self.model to MosaicModel so pyrefly resolves .config and .rng.
+        # At runtime self.model IS a MosaicModel — cast() is a zero-cost hint.
+        _model = cast("MosaicModel", self.model)
+
         # Bounded confidence (model.md §6): no interaction if accents too distant
-        if distance >= self.model.config.theta:
+        if distance >= _model.config.theta:
             return
 
-        alpha_ij = self.model.config.gamma * speaker.centrality
-        noise = self.model.rng.normal(0.0, self.model.config.sigma, size=6)
+        alpha_ij = _model.config.gamma * speaker.centrality
+        noise = _model.rng.normal(0.0, _model.config.sigma, size=6)
 
         self.accent = np.clip(
             self.accent + alpha_ij * diff + noise,
