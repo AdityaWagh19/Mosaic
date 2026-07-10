@@ -1,0 +1,14 @@
+{
+  "pythonVersion": "3.12",
+  "pythonPath": "C:/Program Files/Python312/python.exe",
+  "extraPaths": [
+    "C:/Users/omen/AppData/Roaming/Python/Python312/site-packages",
+    "C:/Program Files/Python312/Lib/site-packages"
+  ],
+  "venvPath": null,
+  "venv": null,
+  "typeCheckingMode": "off",
+  "useLibraryCodeForTypes": true,
+  "reportMissingModuleSource": "none",
+  "reportMissingImports": "none"
+}

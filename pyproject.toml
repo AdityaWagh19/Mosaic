@@ -39,3 +39,13 @@ omit = ["tests/*", "notebooks/*"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
+
+# ---------------------------------------------------------------------------
+# Pyrefly (type checker) — point to the system Python where packages live
+# ---------------------------------------------------------------------------
+[tool.pyrefly]
+python_interpreter = "C:/Program Files/Python312/python.exe"
+search_path = [
+  "C:/Users/omen/AppData/Roaming/Python/Python312/site-packages",
+  "C:/Program Files/Python312/Lib/site-packages",
+]

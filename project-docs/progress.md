@@ -127,3 +127,43 @@ Driver 529.04 ≥ 527.41 minimum for cu121 — confirmed compatible.
 - SBM connectivity guarantee implementation
 
 ---
+
+## 2026-07-10 — Plan 2: Simulation Engine
+
+### Modules Implemented
+Six modules written and verified:
+
+| Module | Lines | Key decisions |
+|---|---|---|
+| `simulation/metrics.py` | ~200 | 7 pure functions; `shannon_diversity_from_labels` for cached path |
+| `simulation/network.py` | ~130 | 4 topology builders; ≤5 retries for ER/SBM; LCC fallback |
+| `simulation/agent.py` | ~80 | No `step()` on agent; noise via `model.rng` (reproducible) |
+| `simulation/model.py` | ~270 | k-means cache (refit every 500 steps); std(h_history) < 0.001 |
+| `simulation/logger.py` | ~120 | In-memory row buffer; single CSV flush at close(); timeline.json |
+| `simulation/runner.py` | ~110 | Sequential loop; seed+i per replicate; summary.csv |
+
+### Performance Results (N=200, T=10,000)
+- **0.5 seconds per run** on NVIDIA GTX 1650
+- **25 runs in 11.7s total** — 5× faster than the 60s exit criterion
+- 20,200 CSV rows per run (200 agents × 101 timesteps) written in one flush
+
+### Verification Results
+- 25 run directories: `runs/watts_strogatz_42/` through `…_66/`
+- Each run: 4 files (`agent_states.csv, config.json, metrics.json, timeline.json`)
+- CSV columns: `timestep, agent_id, community_id, centrality, d0..d5` ✓
+- `results/summary.csv`: 25 rows, 11 columns ✓
+- Reproducibility: same seed → bit-identical CSV (0 differences) ✓
+
+### Key Design Decisions
+- **No Mesa scheduler**: MosaicModel controls scheduling via edge-list sampling.
+- **Convergence**: `std(rolling deque of H values) < 0.001` (min 10 entries).
+  With T=10,000 and theta=0.3 (WS default), H variance ~0.01 → rarely triggers;
+  hard cutoff at T handles it cleanly.
+- **k-means caching**: Refit every 500 steps; `predict()` on intervening steps.
+- **Logger buffering**: All rows accumulated in memory; single flush at close().
+
+### Deferred to Plan 3
+- Unit tests for all 6 modules
+- SBM convergence verification (expected to trigger faster than WS)
+
+---
