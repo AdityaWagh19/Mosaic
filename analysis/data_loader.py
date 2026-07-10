@@ -157,7 +157,7 @@ def build_graph_dataset(
         labels = kmeans.predict(run["x_final"])            # (N,)
         x = torch.tensor(run["x_init"], dtype=torch.float)
         y = torch.tensor(labels, dtype=torch.long)
-        N = int(x.size(0))
+        N = x.size(0)
         # Set num_nodes explicitly so PyG 2.6.x doesn't infer it from edge_index
         data = Data(x=x, edge_index=run["edge_index"], y=y, num_nodes=N)
         data.run_id  = run["run_id"]    # type: ignore[attr-defined]

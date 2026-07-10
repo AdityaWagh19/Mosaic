@@ -100,7 +100,8 @@ def plot_cluster_overview(
     topology : str            — run topology name for the title
     out_path : Path           — output PNG path
     """
-    FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+    import os
+    os.makedirs(str(FIGURES_DIR), exist_ok=True)
 
     reducer = UMAP(n_components=2, random_state=42, n_neighbors=15, min_dist=0.1)
     embedding: np.ndarray = reducer.fit_transform(x_final)

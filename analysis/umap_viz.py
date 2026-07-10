@@ -135,9 +135,10 @@ def plot_umap_4panel(
         fontsize=11,
         framealpha=0.9,
     )
-    plt.tight_layout(rect=[0, 0.08, 1, 1])
+    plt.tight_layout(rect=(0, 0, 1, 0.95))
 
-    FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+    import os
+    os.makedirs(str(out_path.parent), exist_ok=True)
     plt.savefig(out_path, dpi=300, bbox_inches="tight")
     plt.close()
     log.info("UMAP 4-panel saved: %s", out_path)

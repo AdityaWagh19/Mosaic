@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import logging
 import time
+import os
 from pathlib import Path
 
 import matplotlib
@@ -27,6 +28,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.utils.data
 from torch_geometric.loader import DataLoader as GraphDataLoader
 
 from analysis.data_loader import (
@@ -41,10 +43,10 @@ from analysis.clustering import run_dbscan, silhouette, plot_cluster_overview
 from analysis.gcn import (
     GCN,
     MLP,
-    train_gcn_epoch,
+    train_gnn_epoch,
     train_mlp_epoch,
-    evaluate_gcn,
-    evaluate_mlp,
+    eval_gnn,
+    eval_mlp,
 )
 from analysis.umap_viz import plot_umap_4panel
 
@@ -179,7 +181,7 @@ def main() -> None:
     t0 = time.time()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     log.info("Device: %s", device)
-    FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+    os.makedirs(str(FIGURES_DIR), exist_ok=True)
 
     # ── 1. Discover Exp-1 runs ────────────────────────────────────────────
     run_dirs = discover_exp1_runs(RUNS_ROOT)
@@ -233,12 +235,12 @@ def main() -> None:
 
     gcn_losses: list[float] = []
     for epoch in range(1, N_EPOCHS + 1):
-        loss = train_gcn_epoch(gcn_model, gcn_loader, gcn_opt, criterion, device)
+        loss = train_gnn_epoch(gcn_model, gcn_loader, gcn_opt, criterion, device)
         gcn_losses.append(loss)
         if epoch % 10 == 0 or epoch == 1:
             log.info("  GCN epoch %3d / %d  loss=%.4f", epoch, N_EPOCHS, loss)
 
-    gcn_acc, gcn_f1 = evaluate_gcn(gcn_model, test_graphs, device)
+    gcn_acc, gcn_f1, _, _, _ = eval_gnn(gcn_model, test_graphs, criterion, device)
     log.info("GCN  -> Accuracy: %.3f  Macro-F1: %.3f", gcn_acc, gcn_f1)
 
     # ── 6. Train MLP ──────────────────────────────────────────────────────
@@ -261,7 +263,7 @@ def main() -> None:
         if epoch % 10 == 0 or epoch == 1:
             log.info("  MLP epoch %3d / %d  loss=%.4f", epoch, N_EPOCHS, loss)
 
-    mlp_acc, mlp_f1 = evaluate_mlp(mlp_model, X_te, y_te, device)
+    mlp_acc, mlp_f1 = eval_mlp(mlp_model, X_te, y_te, device)
     log.info("MLP  -> Accuracy: %.3f  Macro-F1: %.3f", mlp_acc, mlp_f1)
 
     # ── 7. Save comparison figures ────────────────────────────────────────
@@ -300,7 +302,7 @@ def main() -> None:
         },
     }
     RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(RESULTS_PATH, "w") as f:
+    with open(str(RESULTS_PATH), "w") as f:
         json.dump(results, f, indent=2)
     log.info("Results JSON saved: %s", RESULTS_PATH)
 

@@ -126,36 +126,34 @@ value of graph structure for predicting linguistic trajectory.
 |---|---|---|
 | Random chance | 20.0% | — |
 | MLP (baseline) | **89.2%** | **89.5%** |
-| GCN | 51.1% | 50.3% |
+## 6. Results & Scientific Interpretation (Phase 5.5 Validation)
 
-**GCN vs MLP delta: −38.1 pp** — the MLP dramatically outperforms the GCN.
+To definitively test the hypotheses raised by the initial Phase 5 results, we evaluated 5 architectures across 10 random seeds (train/test splits) over 100 runs.
 
-### Interpretation
+### Statistical Benchmarking (10 seeds)
 
-**Why MLP wins by such a large margin:**
-The initial accent vector `[d0..d5]` alone is highly predictive of final cluster
-membership (89.2% accuracy). In bounded-confidence dynamics (Deffuant model),
-an agent's long-run trajectory is strongly determined by its starting position
-relative to the implicit cluster boundaries — the MLP exploits this directly.
+| Architecture | Accuracy (95% CI) | Macro F1 (95% CI) |
+| :--- | :--- | :--- |
+| **MLP** | **88.1%** [86.9–89.4] | **88.6%** [87.8–89.5] |
+| **GCN** | 60.5% [56.9–64.2] | 61.9% [58.1–65.7] |
+| **GraphSAGE** | 87.0% [85.8–88.2] | 87.5% [86.6–88.3] |
+| **GAT** | 60.5% [56.7–64.3] | 61.8% [57.8–65.8] |
+| **ThresholdGNN** | 83.5% [81.7–85.3] | 83.8% [82.2–85.4] |
 
-**Why the GCN underperforms:**
-The 2-layer GCN aggregates messages over the 1-hop neighbourhood on every
-forward pass. Because the initial accents are already so predictive on their
-own, neighbourhood averaging *dilutes* the individual signal — a classic
-manifestation of **over-smoothing**. The GCN essentially smooths away the very
-information the MLP uses cleanly. With 200-node graphs and 2 conv layers, every
-node receives a weighted average of its ~6 WS / ~3 BA neighbours' features,
-pulling its representation toward the local community centroid and losing the
-fine-grained initial position information.
+### Strong conclusions (well supported)
+1. **Model architecture has a major impact on predictive performance.** Performance ranges from 60.5% (GCN/GAT) to 88.1% (MLP). Architecture choice is a dominant factor for this prediction task.
+2. **Vanilla GCN performs poorly on this bounded-confidence prediction task.** GCN and GAT achieve only ~60% accuracy, indicating that standard neighborhood aggregation is not well suited to this specific problem.
+3. **GraphSAGE substantially outperforms GCN and GAT.** GraphSAGE reaches 87.0%, nearly matching the MLP. This shows that not all GNN architectures behave similarly on bounded-confidence dynamics.
+4. **Threshold-aware message passing improves over standard GCNs.** Threshold-GNN improves from 60.5% → 83.5%. Incorporating the simulator's interaction rule into the architecture appears beneficial.
+5. **Initial node features are highly predictive of the final outcome.** The MLP, which ignores graph structure entirely, achieves the highest accuracy, indicating that the initial feature vectors contain substantial predictive information for this task.
 
-**Research implication:**
-This result supports the theoretical claim that in Deffuant-type models,
-*individual initial position* is the dominant predictor of trajectory outcome,
-not local network topology. Graph structure primarily governs *convergence
-speed* and *isogloss boundary formation* (as shown in Phase 4 Experiments 1–3),
-not which cluster an agent ultimately joins. A single-layer GCN or a GCN with
-a skip-connection (residual link from input to output) would likely recover
-much of the accuracy gap.
+### Moderate conclusions (supported, but carefully worded)
+6. **Topology provides limited additional predictive benefit for this particular prediction task.** Since the MLP remains the best performer, graph information does not clearly improve prediction beyond strong node features for this specific task (predicting final clusters), though this may not apply to the simulator as a whole.
+7. **Architectures that preserve node identity perform better than those relying on indiscriminate neighborhood smoothing.** GraphSAGE and Threshold-GNN preserve more of the node's own information than a vanilla GCN, which is consistent with the observed results.
+
+### Hypotheses supported (not proven)
+8. **The poor performance of GCN is consistent with an architectural mismatch between vanilla message passing and bounded-confidence dynamics.** The large improvement from Threshold-GNN supports this hypothesis, though further experiments are needed to rule out all alternative explanations.
+9. **Threshold-aware graph learning is a promising direction for modeling bounded-confidence simulations.** The custom Threshold-GNN performs much better than standard GCNs, suggesting that incorporating domain-specific interaction rules into GNNs may be valuable.
 
 ### Clustering Analysis
 
