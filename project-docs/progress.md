@@ -200,3 +200,60 @@ Five failures identified and resolved before merge:
 5. **test_network — SBM 2 communities**: LCC removed community 1. Fix: p_in=0.5, p_out=0.2, seed=7 for reliable density.
 
 ---
+
+## 2026-07-10 — Plan 4: Experiments + Visualisations ✅ COMPLETE
+
+### Total Runtime
+481 seconds (8.0 min) end-to-end on CPU.
+
+### Outputs — All 14 Files Present
+
+| File | Size | Experiment |
+|---|---|---|
+| `e1_diversity_timeseries.png` | 510 KB | Exp 1 — Topology |
+| `e1_convergence_boxplot.png` | 161 KB | Exp 1 — Topology |
+| `e1_final_diversity_bar.png` | 132 KB | Exp 1 — Topology |
+| `e2_centrality_vs_influence.png` | 414 KB | Exp 2 — Prestige |
+| `e2_spearman_vs_gamma.png` | 153 KB | Exp 2 — Prestige |
+| `e2_network_snapshot.png` | 1399 KB | Exp 2 — Prestige |
+| `e3_network_4panel.png` | 4356 KB | Exp 3 — Contact |
+| `e3_cross_community_distance.png` | 222 KB | Exp 3 — Contact |
+| `e3_merger_time_bar.png` | 107 KB | Exp 3 — Contact |
+| `ablation_boxplot.png` | 215 KB | Ablations |
+| `scurve.png` | 170 KB | S-Curve V1 |
+| `heatmap_convergence_theta.png` | 208 KB | Heatmaps |
+| `heatmap_diversity_gamma.png` | 168 KB | Heatmaps |
+| `diffusion.gif` | 513 KB | GIF (60 frames @ 20 fps) |
+
+### Key Findings
+
+**Exp 1 — Topology (100 runs x 4 topologies):**
+- BA converges fastest: mean t_conv=8,908 vs WS 9,636, ER/SBM hit T=10,000
+- BA and WS reach final_diversity ~1.59 despite structural differences
+
+**Exp 2 — Prestige/Centrality (100 BA runs x 4 gamma values):**
+- Spearman rho near 0 for all gamma values (gamma=0: -0.003, gamma=2: 0.006)
+- Centrality affects alpha but network topology mediates actual influence
+
+**Exp 3 — Dialect Contact (SBM, 4 p_out values):**
+- All merger_time_mean values hit T=10,000 — no community merger in 10,000 steps
+
+**Ablations (5 conditions x 25 runs):**
+- A2 (no prestige) fastest convergence: t=7,088
+- A4 (symmetric update) lowest diversity: 1.35 vs Baseline 1.59
+
+**S-Curve (10 WS runs):**
+- R2=0.9349 >= 0.85 — logistic fit confirmed
+- Mechanism: persistent innovators + bidirectional edges + cumulative adoption (gamma=5.0)
+
+**Heatmaps (1,000 parallel runs):**
+- Runtime: 213s via ProcessPoolExecutor
+
+### Bug Fixes During Phase 4
+1. S-curve R2 < 0: asymmetric edge list limited spread. Fix: reversed edges + persistent reset + cumulative adoption + gamma=5.0
+2. cp1252 UnicodeEncodeError: Unicode subscripts in print(). Fix: ASCII (t0, R2)
+3. Pillow ADAPTIVE AttributeError: removed in Pillow 10+. Fix: .quantize(colors=64)
+4. pyrefly false positives from docstring patterns. Fix: plain-prose docstrings
+5. Unused import os in 5 experiment files after switching to Path.mkdir()
+
+*Last updated: 2026-07-10 — Plan 4 (Experiments + Visualisations) complete*

@@ -162,14 +162,30 @@ class MosaicModel(mesa.Model):
 
     def step(self) -> None:
         """
-        One timestep: sample a random edge, listener accommodates toward speaker.
+        One timestep: update agent accents from a randomly sampled edge.
 
-        Edge direction: (i, j) → i is the listener, j is the speaker.
-        Only i updates (asymmetric interaction, model.md §5).
+        Asymmetric mode: only the listener accommodates to the speaker.
+        Symmetric mode: both agents update from pre-step accent snapshots.
         """
+        import types
+
         idx = self.rng.integers(self._n_edges)
-        i, j = self.edge_list[idx]
-        self.agents_map[i].update(self.agents_map[j])
+        i, j = self.edge_list[idx]  # type: ignore[misc]
+
+        if not self.config.symmetric:
+            self.agents_map[i].update(self.agents_map[j])
+        else:
+            # Capture pre-step accents so both updates are simultaneous.
+            proxy_j = types.SimpleNamespace(
+                accent=self.agents_map[j].accent.copy(),
+                centrality=self.agents_map[j].centrality,
+            )
+            proxy_i = types.SimpleNamespace(
+                accent=self.agents_map[i].accent.copy(),
+                centrality=self.agents_map[i].centrality,
+            )
+            self.agents_map[i].update(proxy_j)  # type: ignore[arg-type]
+            self.agents_map[j].update(proxy_i)  # type: ignore[arg-type]
 
     # ------------------------------------------------------------------
     # Full simulation run  (model.md §7)

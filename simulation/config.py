@@ -106,6 +106,12 @@ class SimConfig:
     """Number of independent replicates per experimental condition."""
 
     # ------------------------------------------------------------------
+    # Experiment flags
+    # ------------------------------------------------------------------
+    symmetric: bool = False
+    """Ablation A4: if True, both agents update per interaction (symmetric accommodation)."""
+
+    # ------------------------------------------------------------------
     # Validation
     # ------------------------------------------------------------------
     def __post_init__(self) -> None:

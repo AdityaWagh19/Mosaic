@@ -123,19 +123,23 @@ Status: `[ ]` not started · `[/]` in progress · `[x]` done
 
 ---
 
-## Plan 4 — Experiments and Visualisations
+## Plan 4 — Experiments and Visualisations ✅ COMPLETE
 
-- [ ] `viz/figures.py` — 11 figure functions
-- [ ] `viz/gif.py` — `make_diffusion_gif()`
-- [ ] `experiments/exp1_topology.py` — topology comparison
-- [ ] `experiments/exp2_prestige.py` — prestige/centrality effect
-- [ ] `experiments/exp3_contact.py` — SBM dialect contact
-- [ ] `experiments/ablations.py` — 4 ablation studies
-- [ ] `experiments/scurve.py` — S-curve logistic validation
-- [ ] `experiments/heatmaps.py` — parameter heatmaps (parallelised)
-- [ ] `experiments/run_all.py` — single entry point
-- [ ] All 13 figures saved to `results/figures/` at 300 DPI
-- [ ] `diffusion.gif` generated (< 5MB)
+- [x] `viz/figures.py` — 11 figure functions
+- [x] `viz/gif.py` — `make_diffusion_gif()`
+- [x] `experiments/exp1_topology.py` — topology comparison (100 runs, 4 topologies)
+- [x] `experiments/exp2_prestige.py` — prestige/centrality effect (100 BA runs, 4 gamma values)
+- [x] `experiments/exp3_contact.py` — SBM dialect contact (4 p_out values)
+- [x] `experiments/ablations.py` — 5 conditions: Baseline, A1-No homophily, A2-No prestige, A3-No noise, A4-Symmetric (125 runs)
+- [x] `experiments/scurve.py` — S-curve logistic validation (10 WS runs, R²=0.9349 ✓)
+- [x] `experiments/heatmaps.py` — parameter heatmaps (1,000 runs parallelised, 213s)
+- [x] `experiments/run_all.py` — single entry point, 481s total (8.0 min)
+- [x] All 14 figures/GIF saved to `results/figures/` at 300 DPI
+
+### Plan 4 Exit Criteria
+- [x] Every figure exists in `results/figures/` — **14/14 files present**
+- [x] S-curve R² > 0.85 — **R²=0.9349** ✓
+- [x] GIF plays correctly — **diffusion.gif 0.50 MB, 60 frames @ 20 fps** ✓
 
 ---
 
