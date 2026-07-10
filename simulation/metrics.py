@@ -214,7 +214,7 @@ def adoption_fraction(
     fraction : float in [0, 1]
     """
     adopted = int((accent_matrix[:, 0] > initial_dim0 + threshold).sum())
-    return float(adopted / len(accent_matrix))
+    return adopted / len(accent_matrix)
 
 
 # ---------------------------------------------------------------------------
@@ -290,4 +290,4 @@ def logistic_fit(
         r_squared = 0.0
         params = np.zeros(3)
 
-    return float(r_squared), params
+    return r_squared, params

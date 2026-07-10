@@ -28,6 +28,7 @@ Design notes (implementation plan §Plan 2):
 from __future__ import annotations
 
 import logging
+import os
 import time
 from dataclasses import replace
 from pathlib import Path
@@ -126,7 +127,7 @@ def run_monte_carlo(config: SimConfig) -> pd.DataFrame:
     df = pd.DataFrame(rows, columns=_SUMMARY_COLUMNS)
 
     # Write summary CSV
-    _RESULTS_ROOT.mkdir(parents=True, exist_ok=True)
+    os.makedirs(_RESULTS_ROOT, exist_ok=True)
     summary_path = _RESULTS_ROOT / "summary.csv"
     df.to_csv(summary_path, index=False)
     logger.info(

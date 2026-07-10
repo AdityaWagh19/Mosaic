@@ -167,7 +167,7 @@ class MosaicModel(mesa.Model):
         Edge direction: (i, j) → i is the listener, j is the speaker.
         Only i updates (asymmetric interaction, model.md §5).
         """
-        idx = int(self.rng.integers(self._n_edges))
+        idx = self.rng.integers(self._n_edges)
         i, j = self.edge_list[idx]
         self.agents_map[i].update(self.agents_map[j])
 

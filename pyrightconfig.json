@@ -10,5 +10,7 @@
   "typeCheckingMode": "off",
   "useLibraryCodeForTypes": true,
   "reportMissingModuleSource": "none",
-  "reportMissingImports": "none"
+  "reportMissingImports": "none",
+  "reportMissingTypeStubs": "none",
+  "reportUnknownMemberType": "none"
 }

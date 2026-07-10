@@ -51,6 +51,10 @@ class AccentAgent(mesa.Agent):
         residual score metric (model.md §8.6, Experiment 2).
     """
 
+    # Narrow the type of self.model inherited from mesa.Agent (typed as mesa.Model)
+    # so pyrefly resolves .config and .rng correctly.
+    model: "MosaicModel"
+
     def __init__(
         self,
         unique_id: int,
@@ -61,8 +65,8 @@ class AccentAgent(mesa.Agent):
     ) -> None:
         super().__init__(unique_id, model)
         self.accent: np.ndarray = np.array(accent_vector, dtype=float)
-        self.community_id: int = int(community_id)
-        self.centrality: float = float(centrality)
+        self.community_id: int = community_id
+        self.centrality: float = centrality
         # Frozen snapshot at t=0 for influence residual score computation.
         self.initial_accent: np.ndarray = self.accent.copy()
 
