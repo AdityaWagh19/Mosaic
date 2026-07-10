@@ -54,11 +54,14 @@ class AccentAgent(mesa.Agent):
     def __init__(
         self,
         unique_id: int,
-        model: "MosaicModel",
+        model: mesa.Model,
         accent_vector: np.ndarray,
         community_id: int,
         centrality: float,
     ) -> None:
+        # mesa.Model is the correct type here: __init__ only stores the
+        # reference.  The narrowing to MosaicModel is done via cast() in
+        # update() — the only method that accesses .config and .rng.
         super().__init__(unique_id, model)
         self.accent: np.ndarray = np.array(accent_vector, dtype=float)
         self.community_id: int = community_id
