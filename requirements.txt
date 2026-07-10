@@ -1,16 +1,26 @@
 # Mosaic — Python dependencies (pinned versions for reproducibility)
 #
-# Installation
-# ------------
-# Standard packages:
+# GPU (CUDA 12.1) Installation — NVIDIA driver >= 527.41 required
+# Tested on: NVIDIA GeForce GPU, driver 529.04, CUDA 12.0 (cu121 compatible)
+#
+# Note: torch==2.1.2+cu121 does not exist (cu121 wheel server starts at 2.2.0).
+#       Mosaic uses torch==2.4.1+cu121 + torch-geometric==2.6.1.
+# ---------------------------------------------------------------
+# Step 1 — PyTorch + torchvision (CUDA 12.1):
+#   pip install torch==2.4.1+cu121 torchvision==0.19.1+cu121 --index-url https://download.pytorch.org/whl/cu121
+#
+# Step 2 — PyTorch Geometric + sparse extensions:
+#   pip install torch-geometric==2.6.1
+#   pip install torch-scatter torch-sparse torch-cluster torch-spline-conv \
+#       -f https://data.pyg.org/whl/torch-2.4.1+cu121.html
+#
+# Step 3 — Everything else:
 #   pip install -r requirements.txt
 #
-# PyTorch CPU build (Windows/Linux without CUDA):
-#   pip install torch==2.1.2+cpu --index-url https://download.pytorch.org/whl/cpu
-#   pip install torch-geometric==2.4.0
-#
-# If you have a CUDA GPU, replace torch==2.1.2+cpu with torch==2.1.2
-# and install the matching CUDA toolkit build from pytorch.org.
+# CPU-only fallback:
+#   pip install torch==2.4.1+cpu --index-url https://download.pytorch.org/whl/cpu
+#   pip install torch-geometric==2.6.1
+#   pip install -r requirements.txt
 
 # ---------------------------------------------------------------------------
 # Core simulation
@@ -31,10 +41,10 @@ pillow==10.2.0
 
 # ---------------------------------------------------------------------------
 # Machine learning
-# PyTorch: install manually with the CPU or CUDA wheel — see header above.
+# NOTE: Install torch + torch-geometric manually first (see header above).
+#       They are not listed here because pip cannot resolve platform-specific
+#       CUDA wheel URLs from a plain requirements.txt.
 # ---------------------------------------------------------------------------
-# torch==2.1.2+cpu          # install separately — see above
-# torch-geometric==2.4.0    # install after torch
 umap-learn==0.5.5
 
 # ---------------------------------------------------------------------------

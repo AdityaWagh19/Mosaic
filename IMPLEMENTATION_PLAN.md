@@ -445,8 +445,8 @@ scikit-learn==1.3.2
 matplotlib==3.8.2
 seaborn==0.13.2
 pillow==10.2.0
-torch==2.1.2
-torch-geometric==2.4.0
+torch==2.4.1+cu121      # GPU; see requirements.txt header for install command
+torch-geometric==2.6.1  # compatible with torch 2.4.x
 umap-learn==0.5.5
 fastapi==0.104.1
 uvicorn==0.24.0
@@ -465,7 +465,7 @@ jupyter==1.0.0
 **Dependencies:** None.
 
 **Risks:**
-- PyTorch + PyTorch Geometric on Windows CPU: use `torch==2.1.2+cpu` from PyTorch index. Pin both to avoid version mismatch.
+- PyTorch GPU (cu121): `torch==2.4.1+cu121` from `https://download.pytorch.org/whl/cu121`. Requires driver ≥ 527.41 (user has 529.04 — OK). Note: cu121 wheel server starts at 2.2.0, so 2.1.2+cu121 does not exist.
 - Mesa 2.x removed `BatchActivation` and changed `Model.__init__` signature. Verify compatibility before Plan 2.
 
 **Tests:** One smoke test in `tests/test_config.py`: default values match `architecture.md §3.1`; JSON round-trip is lossless; invalid topology string raises `ValueError` from `__post_init__`.

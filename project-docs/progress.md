@@ -74,3 +74,56 @@ mvp.md → tasks.md → experiments.md → ml-pipeline.md
   completed run results (REST polling) — deferred to architecture.md
 
 ---
+
+## 2026-07-10 — Plan 1 (Foundation): Complete
+
+### What Was Built
+
+**Project skeleton:** All 6 Python packages created (`simulation/`, `experiments/`,
+`viz/`, `analysis/`, `api/`, `tests/`) with `__init__.py` markers. Directory
+placeholders created for `runs/`, `results/figures/`, `notebooks/`.
+
+**`simulation/config.py` — `SimConfig` dataclass:**
+The single source of truth for all simulation parameters. All 16 fields from
+`architecture.md §3.1` implemented with defaults. Key design choices:
+- `to_dict()` / `from_dict()` via `dataclasses.asdict` — lossless JSON round-trip.
+- `from_dict()` silently ignores unknown keys for forward compatibility.
+- `__post_init__` validates topology (raises `ValueError`), N, T, theta, sigma, gamma, n_runs.
+- `run_id` property added here (`{topology}_{seed}`) — deterministic, single source
+  of truth used by logger (Plan 2) and data_loader (Plan 5).
+- `save()` / `load()` file helpers added for logger convenience.
+
+**`tests/test_config.py` — 26 tests, all passing:**
+- 10 default value tests (one per field group)
+- 6 serialisation tests (dict round-trip, JSON round-trip, file save/load, run_id format)
+- 2 forward-compatibility tests (extra keys ignored, partial dict fills defaults)
+- 8 validation tests (each invalid parameter raises `ValueError`)
+
+**Project config files:**
+- `requirements.txt` — pinned versions with GPU (CUDA 12.1) install instructions
+- `pyproject.toml` — project metadata + pytest discovery config + coverage config
+- `.gitignore` — tracks `runs/.gitkeep`, ignores all generated run directories and outputs
+
+### Test Results
+```
+pytest tests/test_config.py -v
+26 passed in 2.13s
+```
+
+### Key Decision: PyTorch Version Correction
+
+The implementation plan originally pinned `torch==2.1.2+cu121`, but this version
+does not exist — the PyTorch CUDA 12.1 wheel server starts at 2.2.0.
+
+**Resolution:** Updated to `torch==2.4.1+cu121` (stable, latest 2.4.x) with
+matching `torch-geometric==2.6.1` (compatible with PyTorch 2.4.x). Both the plan
+and `requirements.txt` updated. Version bump only — no architectural change.
+
+GPU confirmed: NVIDIA GeForce (4GB VRAM), driver 529.04, CUDA 12.0.
+Driver 529.04 ≥ 527.41 minimum for cu121 — confirmed compatible.
+
+### Deferred to Plan 2
+- Mesa 2.x API compatibility check (Mesa scheduler not used — sidesteps the issue)
+- SBM connectivity guarantee implementation
+
+---
