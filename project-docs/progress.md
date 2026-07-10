@@ -167,3 +167,36 @@ Six modules written and verified:
 - SBM convergence verification (expected to trigger faster than WS)
 
 ---
+---
+
+## 2026-07-10 — Plan 3: Unit Test Suite
+
+### What Was Built
+
+Four new test files covering every Plan-2 module:
+
+| File | Tests | Focus |
+|---|---|---|
+| `tests/test_network.py` | 8 | Connectivity, node count (WS/BA), centrality [0,1], community_id, SBM 2-community, non-SBM single community, prototypes |
+| `tests/test_agent.py` | 7 | Proportional movement, bounded-confidence gate, gamma=0, sigma>0 stochasticity, sigma=0 determinism, clipping [0,1], seed reproducibility |
+| `tests/test_model.py` | 6 | Required output keys, timeline structure, run_id directory naming, hard cutoff guarantee, convergence detection, seed reproducibility |
+| `tests/test_metrics.py` | 7 | H=0 for identical accents, D=0 for identical accents, D_cross=0 when communities converge, residual score shape, logistic R² in [0,1], positive D for diverse data, label-consistency |
+
+**Total: 59 tests across 5 files (26 Phase-1 config + 33 Phase-3 new)**
+
+### Test Results
+```
+pytest tests/ -v
+59 passed in 3.36s
+```
+
+### Bug Fixes During Testing
+Five failures identified and resolved before merge:
+
+1. **test_agent — proportional movement**: theta=1.0 < L2(test vectors)≈1.11 → bounded-confidence gate fired. Fix: raised theta to 2.0.
+2. **test_model — hard cutoff**: theta=0.001 → no interactions → H frozen → std(H)=0 triggered "convergence". Fix: T=800, log_every=100 (9 entries < min=10, check never runs).
+3. **test_network — ER node count**: default p_er=0.05 too sparse for N=20 → LCC fallback reduces N. Fix: parametrize over WS+BA only.
+4. **test_network — SBM node count**: same LCC issue. Fix: same as above.
+5. **test_network — SBM 2 communities**: LCC removed community 1. Fix: p_in=0.5, p_out=0.2, seed=7 for reliable density.
+
+---

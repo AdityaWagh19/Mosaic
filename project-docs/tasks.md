@@ -111,15 +111,15 @@ Status: `[ ]` not started · `[/]` in progress · `[x]` done
 
 ---
 
-## Plan 3 — Unit Test Suite
+## Plan 3 — Unit Test Suite ✅ COMPLETE
 
-- [ ] `tests/test_network.py` — ≥ 6 tests
-- [ ] `tests/test_agent.py` — ≥ 7 tests
-- [ ] `tests/test_model.py` — ≥ 6 tests
-- [ ] `tests/test_metrics.py` — ≥ 5 tests
+- [x] `tests/test_network.py` — 8 tests (parametrized topology connectivity, node count, centrality [0,1], community_id presence, SBM 2-community split, non-SBM single community, prototypes valid)
+- [x] `tests/test_agent.py` — 7 tests (proportional movement, bounded-confidence suppression, gamma=0 no-move, sigma>0 stochastic, sigma=0 deterministic, clipping [0,1], seed reproducibility)
+- [x] `tests/test_model.py` — 6 tests (required keys, timeline structure, run_id directory, hard cutoff, convergence detection, seed reproducibility)
+- [x] `tests/test_metrics.py` — 7 tests (H=0 identical accents, D=0 identical accents, D_cross=0 converged, residual scores shape, logistic fit R², positive D diverse, labels consistent)
 
 ### Plan 3 Exit Criteria
-- [ ] `pytest tests/ -v` — all ≥ 28 tests pass, 0 failed
+- [x] `pytest tests/ -v` — **59 tests passed, 0 failed in 3.36s**
 
 ---
 
@@ -181,4 +181,4 @@ Status: `[ ]` not started · `[/]` in progress · `[x]` done
 
 ---
 
-*Last updated: 2026-07-10 — Plan 2 (Simulation Engine) complete*
+*Last updated: 2026-07-10 — Plan 3 (Unit Test Suite) complete*
