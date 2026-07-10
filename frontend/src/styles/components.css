@@ -1,0 +1,136 @@
+/* ── Card ──────────────────────────────────────────────────────────── */
+.card {
+  background-color: var(--surface-soft-surface);
+  border: 1px solid var(--color-paper-warm);
+  border-radius: var(--radius-cards);
+  padding: var(--card-padding);
+}
+
+.card--elevated {
+  box-shadow: var(--shadow-md);
+  background-color: var(--surface-canvas);
+}
+
+/* ── Button ────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-8);
+  font-family: var(--font-diatype-mono);
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-caption);
+  text-transform: uppercase;
+  padding: 10px 24px;
+  border-radius: var(--radius-buttons);
+  transition: all 0.2s ease-out;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background-color: var(--color-ink);
+  color: var(--color-white);
+}
+.btn--primary:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.btn--secondary {
+  background-color: var(--color-paper-warm);
+  color: var(--color-ink);
+}
+.btn--secondary:hover:not(:disabled) {
+  background-color: var(--color-mist);
+}
+
+/* ── Badge ─────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background-color: var(--color-mist);
+  color: var(--color-stone);
+  font-family: var(--font-diatype-mono);
+  font-size: var(--text-caption);
+  border-radius: var(--radius-badges);
+  white-space: nowrap;
+}
+
+/* ── Slider ────────────────────────────────────────────────────────── */
+.slider-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  width: 100%;
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider-label {
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-medium);
+}
+
+.slider-value {
+  font-family: var(--font-diatype-mono);
+  font-size: var(--text-caption);
+  color: var(--color-stone);
+}
+
+.slider-input {
+  width: 100%;
+  accent-color: var(--color-ink);
+}
+
+/* ── Dropdown / Select ─────────────────────────────────────────────── */
+.dropdown-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.dropdown-label {
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-medium);
+}
+
+.dropdown-select {
+  padding: 8px 12px;
+  font-family: var(--font-diatype);
+  font-size: var(--text-body);
+  border: 1px solid var(--color-paper-warm);
+  border-radius: var(--radius-inputs);
+  background-color: var(--surface-canvas);
+  color: var(--color-ink);
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23272421" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.dropdown-select:focus {
+  outline: 2px solid var(--color-ink);
+  outline-offset: -1px;
+}
+
+/* ── Spinner ───────────────────────────────────────────────────────── */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: currentColor;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
