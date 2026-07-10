@@ -143,14 +143,28 @@ Status: `[ ]` not started · `[/]` in progress · `[x]` done
 
 ---
 
-## Plan 5 — ML Analysis Layer
+## Plan 5 — ML Analysis Layer ✅ COMPLETE
 
-- [ ] `project-docs/ml-pipeline.md`
-- [ ] `analysis/data_loader.py`
-- [ ] `analysis/clustering.py`
-- [ ] `analysis/gcn.py`
-- [ ] `analysis/evaluate.py`
-- [ ] `analysis/umap_viz.py`
+- [x] `project-docs/ml-pipeline.md` — task definition, data schema, architecture, results
+- [x] `analysis/_umap_compat.py` — UMAP import shim (TF/Keras compatibility)
+- [x] `analysis/data_loader.py` — load CSVs, reconstruct graphs, build PyG datasets
+- [x] `analysis/clustering.py` — DBSCAN, silhouette, cluster overview figure
+- [x] `analysis/gcn.py` — GCN + MLP model definitions + train/eval helpers
+- [x] `analysis/evaluate.py` — main orchestrator: k-means, GCN+MLP training, all figures
+- [x] `analysis/umap_viz.py` — UMAP 4-panel accent-space trajectory figure
+
+### Plan 5 Exit Criteria
+- [x] GCN accuracy reported — **51.1%** (vs 20% random) ✓
+- [x] MLP accuracy reported — **89.2%** (MLP outperforms GCN by 38.1pp) ✓
+- [x] `results/figures/umap_4panel.png` — 4-panel UMAP trajectory ✓
+- [x] `results/figures/gcn_vs_mlp_accuracy.png` — comparison bar chart ✓
+- [x] `results/figures/cluster_map.png` — UMAP cluster overview ✓
+- [x] `results/ml_results.json` — full metrics JSON ✓
+
+### Key Finding
+MLP (89.2%) >> GCN (51.1%): initial accent position alone predicts final cluster.
+Graph structure governs convergence *speed* and isogloss boundaries, not which
+cluster an agent joins. GCN over-smoothing dilutes the fine-grained initial signal.
 
 ---
 
@@ -185,4 +199,4 @@ Status: `[ ]` not started · `[/]` in progress · `[x]` done
 
 ---
 
-*Last updated: 2026-07-10 — Plan 3 (Unit Test Suite) complete*
+*Last updated: 2026-07-10 — Plan 5 (ML Analysis Layer) complete*

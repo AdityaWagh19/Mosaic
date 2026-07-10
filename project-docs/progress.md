@@ -257,3 +257,48 @@ Five failures identified and resolved before merge:
 5. Unused import os in 5 experiment files after switching to Path.mkdir()
 
 *Last updated: 2026-07-10 — Plan 4 (Experiments + Visualisations) complete*
+
+---
+
+## 2026-07-10 — Phase 5: ML Analysis Layer
+
+### What was built
+- `analysis/_umap_compat.py` — UMAP/TensorFlow compatibility shim
+- `analysis/data_loader.py` — run discovery, graph reconstruction, PyG dataset builder
+- `analysis/clustering.py` — DBSCAN, silhouette scoring, UMAP cluster overview figure
+- `analysis/gcn.py` — 2-layer GCN + 2-layer MLP model definitions + helpers
+- `analysis/evaluate.py` — full ML orchestration pipeline (100-epoch training)
+- `analysis/umap_viz.py` — 4-panel UMAP accent-trajectory visualization
+- `project-docs/ml-pipeline.md` — task definition, architecture spec, full results
+
+### Results
+
+| Model | Accuracy | Macro-F1 |
+|---|---|---|
+| Random chance | 20.0% | — |
+| MLP (baseline) | **89.2%** | **89.5%** |
+| GCN | 51.1% | 50.3% |
+
+**GCN vs MLP delta: −38.1 pp**
+
+### Key Research Finding
+The MLP's 89.2% accuracy reveals that the **initial accent position** is
+highly predictive of final cluster membership. The GCN's lower performance
+(51.1%) is attributable to **over-smoothing**: 2-layer graph convolution
+averages over neighbours, diluting the precise initial accent signal.
+Network topology governs convergence speed and isogloss boundaries,
+not which cluster an individual agent ultimately joins.
+
+### Clustering
+- k-means silhouette: 0.089 (weak separation — final space is a continuum)
+- DBSCAN: 1 cluster found — no discrete dialect zones; continuous distribution
+
+### Bug Fixes During Phase 5
+1. `umap` import crash: `parametric_umap.py` uses `tf.keras` at class-definition time.
+   Fix: pre-register `umap.parametric_umap` stub in `sys.modules` (`analysis/_umap_compat.py`).
+2. PyG 2.6.1 y-shape issue with specific batches.
+   Fix: explicit `num_nodes=N` in `Data(...)` constructor.
+3. 4 runs had duplicate agent rows at t_final (Phase 4 re-run artifact).
+   Fix: `drop_duplicates(subset=["timestep","agent_id"], keep="last")` in `load_run`.
+
+*Last updated: 2026-07-10 — Plan 5 (ML Analysis Layer) complete*

@@ -1,0 +1,21 @@
+{
+  "gcn": {
+    "accuracy": 0.5108,
+    "macro_f1": 0.5035
+  },
+  "mlp": {
+    "accuracy": 0.8918,
+    "macro_f1": 0.8955
+  },
+  "n_clusters": 5,
+  "n_train_runs": 80,
+  "n_test_runs": 20,
+  "n_epochs": 100,
+  "random_chance": 0.2,
+  "gcn_vs_mlp_delta_acc": -0.381,
+  "clustering": {
+    "kmeans_silhouette": 0.0895,
+    "dbscan_n_clusters": 1,
+    "dbscan_silhouette": -1.0
+  }
+}
