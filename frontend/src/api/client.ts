@@ -1,4 +1,4 @@
-import { RunResponse, SimConfig, UmapResponse } from '../types/models';
+import type { RunResponse, SimConfig, UmapResponse } from '../types/models';
 
 const API_BASE = 'http://localhost:8000';
 

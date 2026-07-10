@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import { AgentState } from '../../types/models';
-import { getClusterColor } from '../../utils/colorScales';
+import type { AgentState } from '../types/models';
+import { getClusterColor } from '../utils/colorScales';
 
 interface UseD3ScatterProps {
   coords: [number, number][];
@@ -51,13 +51,13 @@ export const useD3Scatter = ({ coords, agentStates, width, height }: UseD3Scatte
         .data(coords)
         .join("circle")
         .attr("r", 4)
-        .attr("fill", (d, i) => getClusterColor(agentStates[i]?.cluster_id ?? 0))
+        .attr("fill", (_d, i) => getClusterColor(agentStates[i]?.cluster_id ?? 0))
         .attr("stroke", "var(--color-white)")
         .attr("stroke-width", 0.5)
         .attr("cx", d => xScale(d[0]))
         .attr("cy", d => yScale(d[1]))
         .append("title")
-        .text((d, i) => `Agent ${agentStates[i]?.agent_id}`);
+        .text((_d, i) => `Agent ${agentStates[i]?.agent_id}`);
     } else {
       // Transition update
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

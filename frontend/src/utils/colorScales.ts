@@ -1,5 +1,3 @@
-import * as d3 from 'd3';
-
 // To adhere strictly to the monochrome design system, we want to map clusters
 // to varying shades of Ink, Stone, Paper Warm, or similar low-chroma colors.
 // Since D3 categorical colors are usually high-chroma, we will define our own 

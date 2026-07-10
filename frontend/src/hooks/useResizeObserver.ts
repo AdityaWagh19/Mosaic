@@ -1,6 +1,7 @@
-import { useState, useEffect, RefObject } from 'react';
+import { useState, useEffect } from 'react';
+import type { RefObject } from 'react';
 
-export const useResizeObserver = (ref: RefObject<HTMLElement>) => {
+export const useResizeObserver = <T extends HTMLElement>(ref: RefObject<T | null>) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {

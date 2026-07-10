@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
-import { NetworkNode, NetworkEdge, AgentState } from '../../types/models';
-import { getClusterColor } from '../../utils/colorScales';
+import type { NetworkNode, NetworkEdge, AgentState } from '../types/models';
+import { getClusterColor } from '../utils/colorScales';
 
 interface UseD3NetworkProps {
   nodes: NetworkNode[];
@@ -88,7 +88,12 @@ export const useD3Network = ({ nodes, edges, agentStates, width, height }: UseD3
     if (prefersReducedMotion) {
       simulation.stop();
       simulation.tick(300); // Fast-forward
-      simulation.on("tick")!(); // Manually trigger render
+      simulation.tick(300); // Fast-forward
+      // Manually trigger render by firing the tick listener callback if needed
+      // Actually we don't need to manually trigger if we just update the attr directly
+      // But we can just restart it with 0 alpha.
+      link.attr("x1", (d: any) => d.source.x).attr("y1", (d: any) => d.source.y).attr("x2", (d: any) => d.target.x).attr("y2", (d: any) => d.target.y);
+      node.attr("cx", (d: any) => d.x).attr("cy", (d: any) => d.y);
     }
 
     // Cleanup

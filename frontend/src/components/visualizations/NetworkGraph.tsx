@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { useD3Network } from '../../hooks/useD3Network';
 import { useResizeObserver } from '../../hooks/useResizeObserver';
-import { NetworkNode, NetworkEdge, AgentState } from '../../types/models';
+import type { NetworkNode, NetworkEdge, AgentState } from '../../types/models';
 
 interface NetworkGraphProps {
   nodes: NetworkNode[];

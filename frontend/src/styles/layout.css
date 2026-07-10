@@ -1,7 +1,7 @@
-/* ── Main Layout ───────────────────────────────────────────────────── */
 .layout {
   display: grid;
   grid-template-columns: 320px 1fr;
+  grid-template-rows: 80px 1fr;
   height: 100vh;
   width: 100vw;
   overflow: hidden;

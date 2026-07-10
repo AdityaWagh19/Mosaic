@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { SimConfig, RunResponse, UmapResponse } from '../types/models';
+import React, { createContext, useContext, useState } from 'react';
+import type { ReactNode } from 'react';
+import type { SimConfig, RunResponse, UmapResponse } from '../types/models';
 import { runSimulation, fetchUmap } from '../api/client';
 
 interface SimulationContextProps {
