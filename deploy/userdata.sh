@@ -29,6 +29,7 @@ useradd -m -s /bin/bash mosaic || true
 # ---------------------------------------------------------------------------
 git clone https://github.com/AdityaWagh19/Mosaic.git /home/mosaic/app
 chown -R mosaic:mosaic /home/mosaic/app
+chmod 755 /home/mosaic
 
 echo "=== Repo cloned ==="
 
