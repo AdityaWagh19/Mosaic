@@ -1,10 +1,10 @@
 # Mosaic
 
-Mosaic is an interactive tool for exploring a simple question: **how can the people we talk to change the way a community speaks?**
+People change how they speak depending on who they talk to. Over time, those small shifts accumulate into dialects: whole communities that sound like each other and different from everyone else. Mosaic simulates that process.
 
-Choose a social network, set a few assumptions about influence and similarity, and run a simulation. Mosaic shows how small changes in individual conversations can produce larger patterns: convergence, persistent differences, community merger, and the influence of highly connected speakers.
+Give it a population of speakers, a social network, and a set of rules about who influences whom. Watch accents drift, cluster, and either converge or hold their ground, depending on how the network is shaped.
 
-It is designed for learning, experimentation, and research demonstrations. It models synthetic accent data rather than real recordings or real communities.
+Built with Python, Mesa, NetworkX, and PyTorch, Mosaic is analyzed with graph-based machine learning and explored through a full-stack React web interface.
 
 ## What Mosaic does
 
