@@ -11,7 +11,7 @@ type Tab='overview'|'network'|'accent'|'data';
 export function Dashboard({nav}:{nav:React.ReactNode}){
  const {runId}=useParams();const navigate=useNavigate();const [params,setParams]=useSearchParams();
  const {result,umap,error,isRunning,load,clear,setConfig}=useSimulation();const tab=(params.get('tab') as Tab)||'overview';
- useEffect(()=>{if(runId)void load(runId);else clear();},[runId]);
+ useEffect(()=>{if(runId)void load(runId);else clear();},[runId, load, clear]);
  const copy=async()=>{if(result)await navigator.clipboard?.writeText(`${window.location.origin}/runs/${result.run_id}`)};
  return <main className="shell">{nav}<div className="studio"><ControlPanel/><section aria-live="polite">
  {error?<div className="notice error"><strong>This run could not be completed.</strong><br/>{error}</div>:isRunning?<div className="empty"><div><span className="spinner"/><h2>Running the simulation…</h2><p>The model is computing interactions locally. A default run may take up to a minute.</p></div></div>:!result?<div className="empty"><div><h2>Start with a question.</h2><p>Choose a topology and parameters, then run the model. Your results will appear here.</p></div></div>:<>

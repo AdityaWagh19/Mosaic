@@ -18,4 +18,5 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
   const load = async (id: string) => { setRunning(true); setError(null); setResult(null); setUmap(null); try { const next = await fetchResult(id); setResult(next); setConfig(next.config); void hydrateUmap(id); } catch (cause) { setError(cause instanceof Error ? cause.message : 'Run could not be loaded.'); } finally { setRunning(false); } };
   return <Context.Provider value={{ config, setConfig, result, umap, isRunning, error, run, load, clear: () => { setResult(null); setUmap(null); setError(null); } }}>{children}</Context.Provider>;
 }
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSimulation() { const value = useContext(Context); if (!value) throw new Error('useSimulation must be used inside SimulationProvider.'); return value; }

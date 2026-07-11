@@ -21,7 +21,7 @@ const mockAnalysis = {
 };
 
 // Default: resolves successfully
-let fetchAnalysisMock = vi.fn().mockResolvedValue(mockAnalysis);
+const fetchAnalysisMock = vi.fn().mockResolvedValue(mockAnalysis);
 
 vi.mock('../api/client', () => ({
   fetchAnalysis: (...args: unknown[]) => fetchAnalysisMock(...args),
