@@ -1,8 +1,32 @@
 # Mosaic
 
-Mosaic is a full-stack research environment for simulating accent and dialect change in socially structured populations. It combines an agent-based model, network science, offline machine-learning analysis, a FastAPI service, and an interactive React interface.
+Mosaic is an interactive tool for exploring a simple question: **how can the people we talk to change the way a community speaks?**
 
-Each agent carries a six-dimensional, phonetically motivated accent vector. During a simulation, connected agents accommodate to one another subject to bounded confidence, social prestige, and stochastic phonetic drift. Global accent patterns emerge from those local interactions.
+Choose a social network, set a few assumptions about influence and similarity, and run a simulation. Mosaic shows how small changes in individual conversations can produce larger patterns: convergence, persistent differences, community merger, and the influence of highly connected speakers.
+
+It is designed for learning, experimentation, and research demonstrations. It models synthetic accent data rather than real recordings or real communities.
+
+## What Mosaic does
+
+- Builds a population of simulated speakers connected by one of four social-network structures.
+- Lets speakers gradually accommodate to connected neighbours when their accents are sufficiently similar.
+- Measures diversity, average accent distance, convergence, and community contact over time.
+- Provides an interactive web interface for running, inspecting, exporting, and comparing simulations.
+- Includes completed experiment figures and an offline machine-learning benchmark.
+
+## How it works
+
+Each simulated speaker has six values representing simplified phonetic features, such as vowel formants, voice onset time, and speaking rate. At each timestep, Mosaic selects one pair of connected speakers. The listener may shift slightly toward the speaker's accent.
+
+Three controls shape that shift:
+
+| Control | Plain-language effect |
+|---|---|
+| Network topology | Determines who can interact and whether hubs or communities emerge. |
+| Prestige weight | Gives highly connected speakers more influence when it is increased. |
+| Confidence bound | Prevents accommodation between speakers whose accents are too different. |
+
+Over many interactions, Mosaic records whether the population becomes more alike, retains distinct groups, or gradually merges across community boundaries.
 
 ## Research questions
 
@@ -50,7 +74,7 @@ sequenceDiagram
     Web-->>User: Inspect, compare, export, or share result
 ```
 
-## Core model
+## Technical model
 
 Each agent has an accent vector `a` in `[0, 1]^6`. For a sampled network edge, the listener updates toward the speaker only when the Euclidean accent distance is below the confidence bound `theta`.
 
