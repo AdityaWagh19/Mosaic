@@ -1,274 +1,249 @@
 # Mosaic
 
-People change how they speak depending on who they talk to. Over time, those small
-shifts accumulate into dialects — whole communities that sound like each other and
-different from everyone else. Mosaic simulates that process.
+Mosaic is a full-stack research environment for simulating accent and dialect change in socially structured populations. It combines an agent-based model, network science, offline machine-learning analysis, a FastAPI service, and an interactive React interface.
 
-Give it a population of speakers, a social network, and a set of rules about who
-influences whom. Watch accents drift, cluster, and either converge or hold their
-ground — depending entirely on how the network is shaped.
+Each agent carries a six-dimensional, phonetically motivated accent vector. During a simulation, connected agents accommodate to one another subject to bounded confidence, social prestige, and stochastic phonetic drift. Global accent patterns emerge from those local interactions.
 
-Built with Python (Mesa, NetworkX, PyTorch), analyzed with a Graph Convolutional
-Network, and explored through a full-stack React web interface.
+## Research questions
 
----
+1. How does network topology affect the rate and final pattern of accent convergence?
+2. Does centrality-based prestige change which speakers influence the population?
+3. Can final accent-cluster membership be predicted from initial simulation state?
 
-## How It Works
+## System architecture
 
-Each agent holds a 6-dimensional accent vector representing real phonetic features
-(vowel formants, voice onset time, speaking rate). At every timestep, two connected
-agents have a conversation. The listener shifts their accent slightly toward the
-speaker — but only if they are socially similar enough, and weighted by how
-influential the speaker is.
+```mermaid
+flowchart TB
+    UI[React and Vite frontend]
+    API[FastAPI service]
+    SIM[Simulation layer\nSimConfig, NetworkX, Mesa]
+    STORE[(runs/ and results/)]
+    ANALYSIS[Analysis layer\nclustering, UMAP, GNN/MLP]
 
-Run this for thousands of interactions across hundreds of agents, and dialect zones
-emerge on their own. No rules about which accent "wins" — just local interactions
-producing global structure.
-
----
-
-## Research Questions
-
-**RQ1 — Topology:**
-How does the shape of the social network affect how quickly and completely accents converge?
-
-**RQ2 — Prestige:**
-Do well-connected speakers — the social hubs — actually drive more accent change than peripheral ones?
-
-**RQ3 — Predictability:**
-Can a Graph Convolutional Network predict where an agent's accent will end up, just from their starting position in the network?
-
----
-
-## Key Results
-
-| Finding | Value |
-|---|---|
-| Fastest convergence topology | Barabási-Albert (mean t=8,908 steps) |
-| Slowest / no convergence | Erdős-Rényi and SBM (hit T=10,000) |
-| Prestige-centrality correlation (Spearman ρ) | ~0 — topology mediates influence, not raw centrality |
-| MLP accent-cluster prediction accuracy | **89.2%** (initial position predicts final cluster) |
-| GCN accent-cluster prediction accuracy | 51.1% (over-smoothing dilutes fine-grained signal) |
-| k-means silhouette on final accent space | 0.089 — continuous distribution, no discrete zones |
-| S-curve logistic adoption R² | 0.9349 |
-
----
-
-## System Architecture
-
-Four independent layers:
-
-```
-┌─────────────────────────────────────┐
-│  Simulation Layer  (Python)         │
-│  SimConfig → Network → Model → Log  │
-└──────────────────┬──────────────────┘
-                   │ CSV + JSON (runs/)
-┌──────────────────▼──────────────────┐
-│  Analysis Layer  (Python)           │
-│  clustering → GCN/MLP → UMAP        │
-└──────────────────┬──────────────────┘
-                   │ REST API
-┌──────────────────▼──────────────────┐
-│  API Layer  (FastAPI, port 8000)    │
-│  10 endpoints — run, results, umap, │
-│  experiments, figures, analysis     │
-└──────────────────┬──────────────────┘
-                   │ HTTP + CORS
-┌──────────────────▼──────────────────┐
-│  Frontend  (React + Vite, port 5173)│
-│  Landing · Simulator · Experiments  │
-│  Compare · ML Analysis              │
-└─────────────────────────────────────┘
+    UI -->|HTTP JSON| API
+    API -->|run configuration| SIM
+    SIM -->|CSV and JSON artifacts| STORE
+    API -->|results, UMAP, archive data| UI
+    STORE --> ANALYSIS
+    ANALYSIS -->|metrics and figures| STORE
+    API -->|curated figures and ML summary| UI
 ```
 
----
+## Simulation workflow
 
-## Network Topologies
+```mermaid
+sequenceDiagram
+    participant User
+    participant Web as Simulation Studio
+    participant API as FastAPI
+    participant Model as MosaicModel
+    participant Disk as Run artifacts
 
-| Topology | Structure | What it produces |
+    User->>Web: Choose topology and parameters
+    Web->>API: POST /run
+    API->>Model: Build graph and execute simulation
+    Model->>Disk: config.json, agent_states.csv, metrics.json, timeline.json
+    Model-->>API: Completed run ID
+    API-->>Web: Final graph, metrics, timeline, agent states
+    Web->>API: GET /umap/{run_id}
+    API-->>Web: Stable UMAP snapshots
+    Web-->>User: Inspect, compare, export, or share result
+```
+
+## Core model
+
+Each agent has an accent vector `a` in `[0, 1]^6`. For a sampled network edge, the listener updates toward the speaker only when the Euclidean accent distance is below the confidence bound `theta`.
+
+```text
+if ||a_speaker - a_listener|| < theta:
+    a_listener = clip(
+        a_listener + gamma * centrality(speaker) * (a_speaker - a_listener)
+        + Normal(0, sigma^2),
+        0, 1,
+    )
+```
+
+The model logs accent states every `log_every` steps and stops when diversity is stable or when it reaches the maximum timestep.
+
+### Network topologies
+
+| Topology | Parameters | Intended structure |
 |---|---|---|
-| Erdős-Rényi | Random edges | Moderate convergence, high run-to-run variance |
-| Watts-Strogatz | High clustering, short paths | Preserves local dialect diversity; slow global spread |
-| Barabási-Albert | Power-law degree, few dominant hubs | Fast convergence driven by influential speakers |
-| Stochastic Block Model | Two explicit communities | Two-phase convergence: fast within, slow between communities |
+| Erdős-Rényi | `p_er` | Random ties with low clustering. |
+| Watts-Strogatz | `k_ws`, `p_rewire` | Small-world graph with local clusters and shortcuts. |
+| Barabási-Albert | `m_ba` | Scale-free graph with influential hubs. |
+| Stochastic Block Model | `p_in`, `p_out` | Two communities with controllable bridging ties. |
 
----
+### Primary outputs
 
-## Technology Stack
-
-| Layer | Technology |
+| Output | Meaning |
 |---|---|
-| Agent-based model | Mesa, NetworkX, NumPy |
-| Data pipeline | pandas |
-| Machine learning | PyTorch 2.4.1, PyTorch Geometric 2.6.1 |
-| Dimensionality reduction | umap-learn |
-| Visualisation | matplotlib, seaborn |
-| API backend | FastAPI, uvicorn |
-| Frontend | React 18, Vite 6, TypeScript 5 |
-| Routing | react-router-dom v7 |
-| Graph viz | D3.js |
-| Charts | Recharts |
-| Testing | pytest |
+| Shannon diversity | Distribution of k-means accent clusters over time. |
+| Mean pairwise distance | Average distance between agent accent vectors. |
+| Convergence time | First stable diversity point under the model criterion. |
+| Final network state | Network nodes, centrality, community IDs, and final accent clusters. |
+| UMAP snapshots | Four aligned 2D views of accent-space evolution. |
 
----
+## Application features
 
-## Project Structure
+The web application provides the following routes:
 
-```
+| Route | Purpose |
+|---|---|
+| `/` | Project overview and entry point. |
+| `/simulate` | Schema-driven simulation configuration and execution. |
+| `/runs/:runId` | Deep-linkable result view. |
+| `/experiments` | Curated offline experiment archive. |
+| `/compare` | Configuration comparison and diversity-trajectory overlays. |
+| `/analysis` | Offline ML benchmark report. |
+| `/guide` | Concise explanation of the method and metrics. |
+
+Completed runs support permalink copying, configuration duplication, JSON/CSV export, UMAP inspection, raw agent-state snapshot playback, and accessible tables for network and chart data.
+
+## Results and interpretation
+
+The stored ML benchmark reports the following values:
+
+| Measure | Result |
+|---|---:|
+| MLP accuracy | 89.18% |
+| MLP macro F1 | 89.55% |
+| GCN accuracy | 51.08% |
+| GCN macro F1 | 50.35% |
+| Random baseline | 20.00% |
+| k-means silhouette | 0.0895 |
+| DBSCAN clusters | 1 |
+
+The MLP outperforms the GCN on this synthetic benchmark. This indicates that initial node features are more predictive than graph convolution under the current data-generation and labeling setup; it is not a general claim about real-world accent change.
+
+## Project structure
+
+```text
 Mosaic/
-├── simulation/        # Core ABM — config, network, agent, model, logger, runner, metrics
-├── analysis/          # ML pipeline — clustering, GCN, MLP, UMAP
-├── experiments/       # Four experiments + ablations + heatmaps + run_all.py
-├── viz/               # matplotlib figure functions + diffusion GIF generator
-├── api/               # FastAPI backend (main.py + schemas.py)
-├── frontend/          # React + Vite app (src/ with pages, components, hooks, contexts)
-├── tests/             # pytest unit + integration tests (59 tests)
-├── results/
-│   ├── figures/       # 19 PNG/GIF research outputs (tracked in git)
-│   └── ml_results.json
-├── runs/              # Auto-generated simulation outputs (gitignored)
-├── research/          # Background literature notes
-├── notebooks/         # demo.ipynb (Phase 8)
-└── project-docs/      # All specification and design documents
+├── simulation/       Core ABM: configuration, network, agents, model, metrics, logging
+├── analysis/         Clustering, UMAP, GNN/MLP training, evaluation
+├── experiments/      Topology, prestige, contact, ablation, S-curve, heatmap experiments
+├── viz/              Publication-oriented matplotlib/seaborn figures and GIF generation
+├── api/              FastAPI application and Pydantic schemas
+├── frontend/         React, TypeScript, Vite, D3, and Recharts application
+├── runs/             Per-run artifacts; generated locally
+├── results/          Aggregate metrics, ML summary, and generated figures
+├── tests/            Simulation and API test suite
+└── project-docs/     Product, model, architecture, experiment, ML, and design documents
 ```
-
----
 
 ## Installation
 
-**Prerequisites:** Python 3.11+, Node.js 18+, Git
+### Prerequisites
+
+- Python 3.11 or later
+- Node.js 18 or later
+- Git
 
 ```bash
 git clone https://github.com/AdityaWagh19/Mosaic.git
 cd Mosaic
 
-# Python environment
 python -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # macOS / Linux
+```
+
+Activate the environment:
+
+```bash
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
+
+# macOS or Linux
+source .venv/bin/activate
+```
+
+Install the Python requirements:
+
+```bash
 pip install -r requirements.txt
 ```
 
----
+`requirements.txt` documents the additional PyTorch and PyTorch Geometric installation commands required for the ML analysis environment.
 
-## Running the Web Interface
+## Running the application
+
+Start the backend in one terminal:
 
 ```bash
-# Terminal 1 — start the API
 python -m uvicorn api.main:app --reload --port 8000
+```
 
-# Terminal 2 — start the frontend
+Start the frontend in another terminal:
+
+```bash
 cd frontend
 npm install
 npm run dev
-# Open http://localhost:5173
 ```
 
-The frontend connects to the API automatically. Configure the simulation,
-run it, and explore the results across four tabs: time series, network graph,
-UMAP accent space, and raw data export.
+Open `http://localhost:5173`. The FastAPI interactive documentation is available at `http://localhost:8000/docs`.
 
----
+To point the frontend at a different API host, define `VITE_API_BASE_URL` before running Vite.
 
-## Running Experiments
-
-```bash
-# Run all four experiments + ablations + heatmaps (≈ 8 minutes on CPU)
-python -m experiments.run_all
-
-# Run a single simulation
-python -m simulation.runner
-
-# Run a specific experiment
-python -m experiments.exp1_topology
-```
-
-All figures are saved to `results/figures/` at 300 DPI.
-
----
-
-## Running Tests
-
-```bash
-pytest tests/ -v
-# 59 tests, 0 failures
-```
-
----
-
-## Programmatic Use
-
-```python
-from simulation.config import SimConfig
-from simulation.network import make_network
-from simulation.model import MosaicModel
-from simulation.logger import DataLogger
-
-config = SimConfig(topology="watts_strogatz", N=200, T=10000, gamma=1.0, theta=0.30)
-G = make_network(config)
-logger = DataLogger(config)
-model = MosaicModel(config, G)
-metrics = model.run(logger)
-
-print(f"Converged: {metrics['converged']} at step {metrics['convergence_time']}")
-print(f"Final diversity: {metrics['final_diversity']:.3f}")
-```
-
----
-
-## API Reference
-
-The backend exposes 10 endpoints at `http://localhost:8000`. Interactive docs available at `http://localhost:8000/docs`.
+## API reference
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/run` | Run simulation; returns full result payload |
-| `GET` | `/results/{run_id}` | Retrieve a previously completed run |
-| `GET` | `/umap/{run_id}` | UMAP coordinates for 4 timesteps |
-| `GET` | `/runs` | Paginated list of persisted runs |
-| `GET` | `/runs/{id}/export` | Download JSON summary or agent-state CSV |
-| `GET` | `/runs/{id}/snapshots` | Agent-state snapshots for playback |
-| `GET` | `/experiments` | Curated offline experiment archive |
-| `GET` | `/figures/{filename}` | Serve a research figure |
-| `GET` | `/analysis/summary` | ML benchmark results |
-| `GET` | `/config/schema` | UI field metadata |
+| `POST` | `/run` | Run one simulation and return the complete result payload. |
+| `GET` | `/results/{run_id}` | Retrieve a completed run. |
+| `GET` | `/umap/{run_id}` | Retrieve cached or computed UMAP snapshots. |
+| `GET` | `/topologies` | List topologies and conditional parameters. |
+| `GET` | `/config/schema` | Return UI labels, ranges, help text, and defaults. |
+| `GET` | `/runs` | List local run summaries with optional cursor and topology filter. |
+| `GET` | `/runs/{run_id}/export` | Download JSON or agent-state CSV. |
+| `GET` | `/runs/{run_id}/snapshots` | Retrieve recorded agent-state snapshots. |
+| `GET` | `/experiments` | List the offline experiment archive. |
+| `GET` | `/experiments/{experiment_id}` | Retrieve one archive entry. |
+| `GET` | `/figures/{filename}` | Serve an allowlisted research figure. |
+| `GET` | `/analysis/summary` | Return ML benchmark metrics and available figures. |
 
----
+## Running experiments and analysis
+
+```bash
+# One default Monte Carlo batch
+python -m simulation.runner
+
+# All planned experiments
+python -m experiments.run_all
+
+# ML evaluation and research figures
+python -m analysis.evaluate
+```
+
+Generated figures are written to `results/figures/`. Per-run artifacts are written under `runs/`.
+
+## Testing and validation
+
+```bash
+pytest tests/ -v
+
+cd frontend
+npm run build
+```
+
+The Python suite covers configuration, network generation, agent updates, model convergence, metrics, and API integration. The frontend build runs TypeScript checking and produces a production bundle.
 
 ## Documentation
 
-All design decisions and specifications in `project-docs/`:
-
 | Document | Contents |
 |---|---|
-| `context.md` | Project identity, research questions, non-goals |
-| `model.md` | Full mathematical specification of the ABM |
-| `architecture.md` | Module specs, API contract, frontend component map |
-| `prd.md` | Functional requirements per phase (with completion status) |
-| `design.md` | Frontend design system and UI specification |
-| `experiments.md` | Pre-specified experimental design and metrics |
-| `ml-pipeline.md` | ML architecture, training procedure, full results |
-| `progress.md` | Running log of decisions and findings by phase |
-| `tasks.md` | Living task tracker for all phases |
-| `frontend-implementation-plan.md` | Detailed Phase 7 frontend implementation plan |
+| `project-docs/context.md` | Project rationale, research questions, and scope. |
+| `project-docs/model.md` | Mathematical model and metric definitions. |
+| `project-docs/architecture.md` | Module responsibilities and API architecture. |
+| `project-docs/experiments.md` | Experimental protocol and expected figures. |
+| `project-docs/ml-pipeline.md` | Data, models, evaluation, and scientific interpretation. |
+| `project-docs/design.md` | Frontend visual system. |
+| `project-docs/frontend-implementation-plan.md` | Frontend architecture and delivery plan. |
 
----
+## Scope
 
-## Roadmap
-
-| Phase | Status | Description |
-|---|---|---|
-| Phase 0 — Documentation | ✅ Complete | Project docs, design system |
-| Phase 1 — Simulation Core | ✅ Complete | ABM, experiments, 14 figures |
-| Phase 2 — ML Analysis | ✅ Complete | GCN, MLP, UMAP, clustering |
-| Phase 3 — FastAPI Backend | ✅ Complete | 10 endpoints, Pydantic schemas |
-| Phase 4 — React Frontend | ✅ Complete | 5 pages, D3, Recharts, mobile modal |
-| Phase 5 — Repository Cleanup | ✅ Complete | Removed orphaned files |
-| Phase 8 — Integration + Polish | 🔄 In progress | CI, demo notebook, error handling |
-
----
+Mosaic models synthetic accent vectors and social-network interactions. It does not process speech audio, infer real-world dialect identity, represent specific populations, or provide multi-user collaboration.
 
 ## License
 
-MIT License
+MIT License.
