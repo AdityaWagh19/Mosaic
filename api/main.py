@@ -63,10 +63,19 @@ EXPERIMENTS = {
     },
 }
 
-# Enable CORS for frontend
+# Enable CORS for frontend.
+# EC2 production: nginx serves React on the same origin, so /api/* proxy
+# requests arrive without an Origin header — CORS middleware is not invoked.
+# Local dev origins are listed explicitly.
+# GitHub Pages showcase: read-only, no POST /run from that origin.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:4173",          # vite preview
+        "https://adityawagh19.github.io", # GitHub Pages showcase (read-only)
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -75,12 +84,12 @@ app.add_middleware(
 
 @app.get("/topologies")
 def get_topologies():
-    """Return supported topologies and their specific parameters."""
+    """Return supported topologies, human-readable labels, and their specific parameters."""
     return {
-        "er": {"desc": "Erdös-Rényi random graph", "params": ["p_er"]},
-        "watts_strogatz": {"desc": "Watts-Strogatz small world", "params": ["k_ws", "p_rewire"]},
-        "ba": {"desc": "Barabási-Albert scale-free", "params": ["m_ba"]},
-        "sbm": {"desc": "Two-community stochastic block model", "params": ["p_in", "p_out"]},
+        "er": {"label": "Erdős–Rényi", "desc": "Erdős–Rényi random graph", "params": ["p_er"]},
+        "watts_strogatz": {"label": "Watts-Strogatz", "desc": "Watts-Strogatz small world", "params": ["k_ws", "p_rewire"]},
+        "ba": {"label": "Barabási-Albert", "desc": "Barabási-Albert scale-free", "params": ["m_ba"]},
+        "sbm": {"label": "Stochastic block model", "desc": "Two-community stochastic block model", "params": ["p_in", "p_out"]},
     }
 
 

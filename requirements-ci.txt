@@ -1,0 +1,36 @@
+# =============================================================================
+# requirements-ci.txt
+# =============================================================================
+# Identical to requirements.txt but installs CPU-only PyTorch.
+# Used by GitHub Actions CI to avoid downloading 4 GB CUDA wheels.
+#
+# Usage:
+#   pip install torch==2.4.1+cpu --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r requirements-ci.txt
+# =============================================================================
+
+# Install CPU-only torch first via index URL in CI workflow, then install rest:
+--index-url https://download.pytorch.org/whl/cpu
+
+# Core ML / graph (CPU variants)
+torch==2.4.1+cpu
+torch-geometric
+
+# Dimensionality reduction
+umap-learn
+
+# Web framework
+fastapi
+uvicorn[standard]
+
+# Scientific computing
+numpy
+pandas
+scikit-learn
+scipy
+networkx
+matplotlib
+
+# Utilities
+python-dotenv
+pydantic

@@ -1,0 +1,26 @@
+name: Deploy to EC2
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    name: SSH deploy
+    runs-on: ubuntu-latest
+    # Only deploy if CI passed — never deploy a broken build
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:     ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key:      ${{ secrets.EC2_SSH_KEY }}
+          timeout:  300s
+          script: |
+            cd /home/mosaic/app
+            bash deploy/deploy.sh

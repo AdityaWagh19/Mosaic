@@ -1,0 +1,39 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  pages:
+    name: Build and deploy static showcase
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Build static showcase
+        run: npm run build
+        working-directory: frontend
+        env:
+          VITE_BASE_PATH: /Mosaic/
+          # Points to localhost — API-dependent pages gracefully show empty states
+          VITE_API_BASE_URL: http://localhost:8000
+
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./frontend/dist

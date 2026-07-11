@@ -1,0 +1,35 @@
+[Unit]
+Description=Mosaic FastAPI backend (uvicorn)
+Documentation=https://github.com/AdityaWagh19/Mosaic
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=mosaic
+Group=mosaic
+WorkingDirectory=/home/mosaic/app
+
+ExecStart=/home/mosaic/app/.venv/bin/uvicorn api.main:app \
+    --host 127.0.0.1 \
+    --port 8000 \
+    --workers 2 \
+    --timeout-keep-alive 120 \
+    --log-level info
+
+# Restart policy — auto-restart on crash, max 5 times in 60s
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+# Resource limits — stay within t3.micro 1 GB RAM
+MemoryMax=700M
+CPUQuota=180%
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
