@@ -1,193 +1,136 @@
 # Mosaic — Task Tracker
 
-Living task list aligned with `IMPLEMENTATION_PLAN.md` (8 plans).
-Update status markers as work progresses.
-
+Living task list for all phases.
 Status: `[ ]` not started · `[/]` in progress · `[x]` done
 
 ---
 
-## Phase 0 — Documentation
+## Phase 0 — Documentation ✅ COMPLETE
 
 - [x] Create project-docs/ folder with 9 files
-- [x] Write progress.md
-- [x] Write context.md
-- [x] Write model.md
-- [x] Write architecture.md
-- [x] Write prd.md
-- [x] Write mvp.md
-- [x] Write tasks.md
-- [x] Write experiments.md
-- [x] Write design.md (merged from 4 source files)
-- [ ] Write ml-pipeline.md — deferred to Plan 5 (written from actual implementation)
-- [x] Create IMPLEMENTATION_PLAN.md in project root
+- [x] Write progress.md, context.md, model.md, architecture.md
+- [x] Write prd.md, mvp.md, tasks.md, experiments.md
+- [x] Write design.md (frontend design system)
+- [x] Write ml-pipeline.md (written from actual implementation)
+- [x] Write frontend-implementation-plan.md
 
 ---
 
 ## Plan 1 — Foundation ✅ COMPLETE
 
-### 1.1 Project Skeleton
-- [x] Create all package directories: `simulation/`, `experiments/`, `viz/`, `analysis/`, `api/`, `tests/`, `notebooks/`
-- [x] Create all `__init__.py` package markers
-- [x] Create `runs/.gitkeep` and `results/figures/.gitkeep`
-
-### 1.2 Configuration
-- [x] Implement `simulation/config.py` — `SimConfig` dataclass (16 fields, validation, serialisation)
-- [x] `to_dict()` / `from_dict()` / `to_json()` / `from_json()` / `save()` / `load()`
-- [x] `run_id` property (`{topology}_{seed}`)
-- [x] `__post_init__` validation (topology, N, T, theta, sigma, gamma, n_runs)
-
-### 1.3 Project Config Files
-- [x] `requirements.txt` — GPU (CUDA 12.1) pinned versions
-- [x] `pyproject.toml` — project metadata + pytest config
-- [x] `.gitignore`
-
-### 1.4 Tests
-- [x] `tests/test_config.py` — 26 tests (defaults, serialisation, forward-compat, validation)
-
-### Plan 1 Exit Criteria
-- [x] `from simulation.config import SimConfig` — imports cleanly
-- [x] JSON round-trip assertion passes
-- [x] All 6 `__init__.py` files exist
-- [x] `pytest tests/test_config.py -v` — 26 passed, 0 failed
-- [x] All packages importable (torch 2.4.1+cu121, torch-geometric 2.6.1, CUDA=True)
+- [x] All package directories and `__init__.py` markers
+- [x] `runs/.gitkeep`, `results/figures/.gitkeep`
+- [x] `simulation/config.py` — `SimConfig` dataclass (16 fields, validation, serialisation)
+- [x] `requirements.txt`, `pyproject.toml`, `.gitignore`
+- [x] `tests/test_config.py` — 26 tests passing
 
 ---
 
 ## Plan 2 — Simulation Engine ✅ COMPLETE
 
-### 2.1 `simulation/metrics.py`
-- [x] `shannon_diversity(accent_matrix, n_clusters=5)` — k-means + H entropy
-- [x] `shannon_diversity_from_labels(labels)` — fast path for cached labels
-- [x] `mean_pairwise_distance(accent_matrix)` — scipy pdist
-- [x] `cross_community_distance(accent_matrix, community_ids)`
-- [x] `influence_residual_scores(initial_accents, final_mean_accent)`
-- [x] `adoption_fraction(accent_matrix, initial_dim0, threshold=0.2)`
-- [x] `spearman_centrality_influence(centrality, influence_scores)`
-- [x] `logistic_fit(t, adoption)` → (R², params)
-
-### 2.2 `simulation/network.py`
-- [x] `make_network(config)` dispatch to 4 topologies
-- [x] ER — connectivity check with up to 5 retries (seed+1000)
-- [x] WS — always connected, no retry needed
-- [x] BA — always connected
-- [x] SBM — sizes=[N//2, N-N//2], probs from p_in/p_out
-- [x] Normalised degree centrality stored as node attribute
-- [x] `community_id` assigned (SBM: 0/1 by block; others: 0)
-- [x] Largest-component fallback with warning if all retries fail
-- [x] `COMMUNITY_PROTOTYPES` dict exported for MosaicModel
-
-### 2.3 `simulation/agent.py`
-- [x] `AccentAgent(mesa.Agent)` with `unique_id, model, accent_vector, community_id, centrality`
-- [x] `update(speaker)` — bounded confidence check, α_ij scaling, noise via model.rng, clip [0,1]
-- [x] `initial_accent` snapshot at t=0 for influence residual scores (Experiment 2)
-
-### 2.4 `simulation/model.py`
-- [x] `MosaicModel(mesa.Model)` — edge list precomputed, `self.rng = np.random.default_rng(seed)`
-- [x] `_init_accent(community_id)` — SBM: community prototypes; others: single Gaussian
-- [x] `step()` — random edge sample, asymmetric update (i accommodates to j)
-- [x] `_compute_h()` — k-means with 500-step refit cache
-- [x] Convergence: `std(h_history[-200:]) < 0.001` with min 10 entries
-- [x] `run(log)` → full metrics dict + timeline list
-
-### 2.5 `simulation/logger.py`
-- [x] Creates `runs/{run_id}/` directory, writes `config.json` at init
-- [x] `log(t, agents)` — buffers agent snapshot rows in memory
-- [x] `close(metrics, timeline)` — flushes CSV, writes `metrics.json` + `timeline.json`
-- [x] CSV columns: `timestep, agent_id, community_id, centrality, d0..d5`
-
-### 2.6 `simulation/runner.py`
-- [x] `run_single(config)` — builds network, model, logger; runs; returns metrics
-- [x] `run_monte_carlo(config)` — sequential loop, seed+i per replicate, writes `results/summary.csv`
-- [x] `__main__` entry point with progress logging and summary statistics
-
-### Plan 2 Exit Criteria
-- [x] `python -m simulation.runner` — 25 runs complete without errors (**11.7s total, 0.5s/run**)
-- [x] 25 `{topology}_{seed}/` directories in `runs/`, each with 4 files
-- [x] `results/summary.csv` exists with all required columns
-- [x] Single run N=200, T=10,000 in **0.5s** (<<60s requirement)
-- [x] CSV schema: `timestep, agent_id, community_id, centrality, d0..d5` ✓
-- [x] Reproducibility: same seed → bit-identical CSV ✓
+- [x] `simulation/metrics.py` — 7 pure metric functions
+- [x] `simulation/network.py` — 4 topology builders, connectivity guarantee
+- [x] `simulation/agent.py` — `AccentAgent` with bounded-confidence update rule
+- [x] `simulation/model.py` — edge-based scheduling, k-means cache, convergence detection
+- [x] `simulation/logger.py` — in-memory buffer, single CSV flush, timeline.json
+- [x] `simulation/runner.py` — Monte Carlo loop, `results/summary.csv`
+- [x] 25 runs in 11.7s (0.5s/run) ✓; reproducibility confirmed ✓
 
 ---
 
 ## Plan 3 — Unit Test Suite ✅ COMPLETE
 
-- [x] `tests/test_network.py` — 8 tests (parametrized topology connectivity, node count, centrality [0,1], community_id presence, SBM 2-community split, non-SBM single community, prototypes valid)
-- [x] `tests/test_agent.py` — 7 tests (proportional movement, bounded-confidence suppression, gamma=0 no-move, sigma>0 stochastic, sigma=0 deterministic, clipping [0,1], seed reproducibility)
-- [x] `tests/test_model.py` — 6 tests (required keys, timeline structure, run_id directory, hard cutoff, convergence detection, seed reproducibility)
-- [x] `tests/test_metrics.py` — 7 tests (H=0 identical accents, D=0 identical accents, D_cross=0 converged, residual scores shape, logistic fit R², positive D diverse, labels consistent)
-
-### Plan 3 Exit Criteria
-- [x] `pytest tests/ -v` — **59 tests passed, 0 failed in 3.36s**
+- [x] `tests/test_network.py` — 8 tests
+- [x] `tests/test_agent.py` — 7 tests
+- [x] `tests/test_model.py` — 6 tests
+- [x] `tests/test_metrics.py` — 7 tests
+- [x] `pytest tests/ -v` — **59 tests, 0 failed** ✓
 
 ---
 
-## Plan 4 — Experiments and Visualisations ✅ COMPLETE
+## Plan 4 — Experiments + Visualisations ✅ COMPLETE
 
 - [x] `viz/figures.py` — 11 figure functions
 - [x] `viz/gif.py` — `make_diffusion_gif()`
-- [x] `experiments/exp1_topology.py` — topology comparison (100 runs, 4 topologies)
-- [x] `experiments/exp2_prestige.py` — prestige/centrality effect (100 BA runs, 4 gamma values)
-- [x] `experiments/exp3_contact.py` — SBM dialect contact (4 p_out values)
-- [x] `experiments/ablations.py` — 5 conditions: Baseline, A1-No homophily, A2-No prestige, A3-No noise, A4-Symmetric (125 runs)
-- [x] `experiments/scurve.py` — S-curve logistic validation (10 WS runs, R²=0.9349 ✓)
-- [x] `experiments/heatmaps.py` — parameter heatmaps (1,000 runs parallelised, 213s)
-- [x] `experiments/run_all.py` — single entry point, 481s total (8.0 min)
-- [x] All 14 figures/GIF saved to `results/figures/` at 300 DPI
-
-### Plan 4 Exit Criteria
-- [x] Every figure exists in `results/figures/` — **14/14 files present**
-- [x] S-curve R² > 0.85 — **R²=0.9349** ✓
-- [x] GIF plays correctly — **diffusion.gif 0.50 MB, 60 frames @ 20 fps** ✓
+- [x] `experiments/exp1_topology.py` — topology comparison
+- [x] `experiments/exp2_prestige.py` — prestige/centrality effect
+- [x] `experiments/exp3_contact.py` — SBM dialect contact
+- [x] `experiments/ablations.py` — 5 ablation conditions
+- [x] `experiments/scurve.py` — S-curve validation (R²=0.9349) ✓
+- [x] `experiments/heatmaps.py` — parameter heatmaps (1,000 parallelised runs)
+- [x] `experiments/run_all.py` — single entry point
+- [x] All 14 figures/GIF saved to `results/figures/` ✓
 
 ---
 
 ## Plan 5 — ML Analysis Layer ✅ COMPLETE
 
-- [x] `project-docs/ml-pipeline.md` — task definition, data schema, architecture, results
-- [x] `analysis/_umap_compat.py` — UMAP import shim (TF/Keras compatibility)
-- [x] `analysis/data_loader.py` — load CSVs, reconstruct graphs, build PyG datasets
-- [x] `analysis/clustering.py` — DBSCAN, silhouette, cluster overview figure
-- [x] `analysis/gcn.py` — GCN + MLP model definitions + train/eval helpers
-- [x] `analysis/evaluate.py` — main orchestrator: k-means, GCN+MLP training, all figures
-- [x] `analysis/umap_viz.py` — UMAP 4-panel accent-space trajectory figure
-
-### Plan 5 Exit Criteria
-- [x] GCN accuracy reported — **51.1%** (vs 20% random) ✓
-- [x] MLP accuracy reported — **89.2%** (MLP outperforms GCN by 38.1pp) ✓
-- [x] `results/figures/umap_4panel.png` — 4-panel UMAP trajectory ✓
-- [x] `results/figures/gcn_vs_mlp_accuracy.png` — comparison bar chart ✓
-- [x] `results/figures/cluster_map.png` — UMAP cluster overview ✓
-- [x] `results/ml_results.json` — full metrics JSON ✓
-
-### Key Finding
-MLP (89.2%) >> GCN (51.1%): initial accent position alone predicts final cluster.
-Graph structure governs convergence *speed* and isogloss boundaries, not which
-cluster an agent joins. GCN over-smoothing dilutes the fine-grained initial signal.
+- [x] `analysis/_umap_compat.py` — UMAP import shim
+- [x] `analysis/data_loader.py` — load CSVs, reconstruct graphs, PyG datasets
+- [x] `analysis/clustering.py` — DBSCAN + silhouette
+- [x] `analysis/gcn.py` — GCN + MLP model definitions
+- [x] `analysis/evaluate.py` — training + evaluation pipeline
+- [x] `analysis/umap_viz.py` — 4-panel UMAP figure
+- [x] MLP: 89.2% accuracy; GCN: 51.1% ✓
+- [x] `results/ml_results.json` ✓; all ML figures in `results/figures/` ✓
 
 ---
 
-## Plan 6 — FastAPI Backend
+## Plan 6 — FastAPI Backend ✅ COMPLETE
 
-- [ ] `api/schemas.py`
-- [ ] `api/main.py` — 4 endpoints
-- [ ] `tests/test_api.py`
+- [x] `api/schemas.py` — Pydantic v2 request/response models
+- [x] `api/main.py` — 10 endpoints (see architecture.md §5 for full list)
+  - [x] `POST /run` — synchronous simulation execution
+  - [x] `GET /results/{run_id}` — retrieve persisted run
+  - [x] `GET /umap/{run_id}` — on-demand UMAP with caching
+  - [x] `GET /runs` — paginated run archive
+  - [x] `GET /runs/{run_id}/export` — JSON or CSV download
+  - [x] `GET /runs/{run_id}/snapshots` — agent-state playback data
+  - [x] `GET /topologies` — topology metadata
+  - [x] `GET /config/schema` — UI field metadata
+  - [x] `GET /experiments` — offline experiment archive
+  - [x] `GET /figures/{filename}` — allowlist-protected figure serving
+  - [x] `GET /analysis/summary` — ML results + figure manifest
+- [x] CORS configured for `localhost:5173`
+- [x] `tests/test_api.py` — integration tests
 
 ---
 
-## Plan 7 — React Frontend
+## Plan 7 — React Frontend ✅ COMPLETE
 
-- [ ] Vite + React scaffold in `frontend/`
-- [ ] All components per design.md
+- [x] Vite 6 + React 18 + TypeScript scaffold in `frontend/`
+- [x] `react-router-dom` v7 routing (7 routes)
+- [x] `SimulationProvider` context — global state ownership
+- [x] `api/client.ts` — typed fetch wrappers for all endpoints
+- [x] `types/models.ts` — TypeScript interfaces matching backend schemas
+- [x] `styles/tokens.css` — full CSS design token system
+- [x] `styles/accessibility.css` — focus rings, reduced-motion
+- [x] `index.css` — all utility/layout classes + mobile breakpoints
+- [x] `LandingPage.tsx` — hero, feature cards, use-case grid
+- [x] `Dashboard.tsx` — simulation studio with 4-tab result view
+- [x] `ExperimentsPage.tsx` — research archive with filters, findings, download
+- [x] `AnalysisPage.tsx` — ML benchmark table + clustering diagnostics
+- [x] `ComparePage.tsx` — side-by-side run comparison
+- [x] `ControlPanel.tsx` — config form; mobile `<dialog>` modal on ≤800px
+- [x] `NetworkGraph.tsx` — D3.js force-directed graph
+- [x] `TimeSeriesChart.tsx` — Recharts diversity + pairwise distance curves
+- [x] `UmapScatter.tsx` — D3 scatter with timestep slider
+- [x] `SnapshotPlayback.tsx` — agent-state snapshot scrubber
 
 ---
 
-## Plan 8 — Integration and Polish
+## Plan 8 — Integration + Polish [ ] IN PROGRESS
 
-- [ ] `notebooks/demo.ipynb`
-- [ ] `.github/workflows/tests.yml`
-- [ ] Updated README.md
+- [ ] `notebooks/demo.ipynb` — narrative walkthrough of one full run
+- [ ] `.github/workflows/tests.yml` — CI pipeline (pytest + frontend build)
+- [ ] End-to-end smoke test: POST /run → frontend render
+- [ ] Error boundary + graceful degradation for API failures
+- [ ] Loading skeleton states for all data-fetching components
+- [ ] Accessibility audit (keyboard nav, ARIA labels, color contrast)
+- [ ] Performance: lazy-load D3/Recharts only when tab is active
+- [ ] SEO: meta descriptions, og:image, canonical URLs for each page
+- [ ] Final README update with screenshots and GIF embed
+- [ ] Version tag: `git tag v1.0.0`
 
 ---
 
@@ -195,8 +138,8 @@ cluster an agent joins. GCN over-smoothing dilutes the fine-grained initial sign
 
 - [x] Update `progress.md` after each phase completion
 - [x] Update `tasks.md` after each phase completion
-- [ ] Commit and push after each completed plan
+- [x] Commit and push after each completed plan
 
 ---
 
-*Last updated: 2026-07-10 — Plan 5 (ML Analysis Layer) complete*
+*Last updated: 2026-07-11 — Phase 7 complete. Phase 8 starting next.*

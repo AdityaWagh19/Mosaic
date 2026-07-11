@@ -9,7 +9,7 @@ influences whom. Watch accents drift, cluster, and either converge or hold their
 ground — depending entirely on how the network is shaped.
 
 Built with Python (Mesa, NetworkX, PyTorch), analyzed with a Graph Convolutional
-Network, and explored through a custom React web interface.
+Network, and explored through a full-stack React web interface.
 
 ---
 
@@ -40,74 +40,57 @@ Can a Graph Convolutional Network predict where an agent's accent will end up, j
 
 ---
 
+## Key Results
+
+| Finding | Value |
+|---|---|
+| Fastest convergence topology | Barabási-Albert (mean t=8,908 steps) |
+| Slowest / no convergence | Erdős-Rényi and SBM (hit T=10,000) |
+| Prestige-centrality correlation (Spearman ρ) | ~0 — topology mediates influence, not raw centrality |
+| MLP accent-cluster prediction accuracy | **89.2%** (initial position predicts final cluster) |
+| GCN accent-cluster prediction accuracy | 51.1% (over-smoothing dilutes fine-grained signal) |
+| k-means silhouette on final accent space | 0.089 — continuous distribution, no discrete zones |
+| S-curve logistic adoption R² | 0.9349 |
+
+---
+
 ## System Architecture
 
-Three independent layers — build and test each in isolation.
+Four independent layers:
 
-```mermaid
-graph TD
-    subgraph SIM["Simulation Layer (Python)"]
-        CFG[config.py<br/>SimConfig dataclass]
-        NET[network.py<br/>NetworkGenerator]
-        AGT[agent.py<br/>AccentAgent]
-        MDL[model.py<br/>MosaicModel]
-        LOG[logger.py<br/>DataLogger]
-        RUN[runner.py<br/>MonteCarloRunner]
-        CFG --> NET
-        CFG --> MDL
-        NET --> MDL
-        AGT --> MDL
-        MDL --> LOG
-        CFG --> RUN
-        RUN --> MDL
-    end
-
-    subgraph ML["Analysis Layer (Python)"]
-        CLU[clustering.py<br/>k-means + DBSCAN]
-        GCN[gcn.py<br/>GCN Predictor]
-        UMP[umap_viz.py<br/>UMAP Coordinates]
-    end
-
-    subgraph API["API Layer (FastAPI)"]
-        EP1[POST /run]
-        EP2[GET /results/id]
-        EP3[GET /umap/id]
-    end
-
-    subgraph FE["Frontend Layer (React + Vite)"]
-        CP[ControlPanel]
-        NG[NetworkGraph<br/>D3.js]
-        TS[TimeSeries<br/>Recharts]
-        US[UMAPScatter]
-    end
-
-    LOG -->|CSV + JSON| CLU
-    LOG -->|CSV + JSON| GCN
-    LOG -->|CSV + JSON| UMP
-    LOG -->|JSON| EP1
-    EP1 --> CP
-    EP2 --> NG
-    EP2 --> TS
-    EP3 --> US
 ```
-
-| Layer | Phase |
-|---|---|
-| Simulation | Phase 1 |
-| Analysis + ML | Phase 2 |
-| API + Frontend | Phase 3 |
+┌─────────────────────────────────────┐
+│  Simulation Layer  (Python)         │
+│  SimConfig → Network → Model → Log  │
+└──────────────────┬──────────────────┘
+                   │ CSV + JSON (runs/)
+┌──────────────────▼──────────────────┐
+│  Analysis Layer  (Python)           │
+│  clustering → GCN/MLP → UMAP        │
+└──────────────────┬──────────────────┘
+                   │ REST API
+┌──────────────────▼──────────────────┐
+│  API Layer  (FastAPI, port 8000)    │
+│  10 endpoints — run, results, umap, │
+│  experiments, figures, analysis     │
+└──────────────────┬──────────────────┘
+                   │ HTTP + CORS
+┌──────────────────▼──────────────────┐
+│  Frontend  (React + Vite, port 5173)│
+│  Landing · Simulator · Experiments  │
+│  Compare · ML Analysis              │
+└─────────────────────────────────────┘
+```
 
 ---
 
 ## Network Topologies
 
-Four social network structures, each producing qualitatively different dynamics.
-
 | Topology | Structure | What it produces |
 |---|---|---|
-| Erdos-Renyi | Random edges | Moderate convergence, high run-to-run variance |
-| Watts-Strogatz | High local clustering, short paths | Preserves local dialect diversity; slow global spread |
-| Barabasi-Albert | Power-law degree, few dominant hubs | Fast convergence driven by influential speakers |
+| Erdős-Rényi | Random edges | Moderate convergence, high run-to-run variance |
+| Watts-Strogatz | High clustering, short paths | Preserves local dialect diversity; slow global spread |
+| Barabási-Albert | Power-law degree, few dominant hubs | Fast convergence driven by influential speakers |
 | Stochastic Block Model | Two explicit communities | Two-phase convergence: fast within, slow between communities |
 
 ---
@@ -118,11 +101,14 @@ Four social network structures, each producing qualitatively different dynamics.
 |---|---|
 | Agent-based model | Mesa, NetworkX, NumPy |
 | Data pipeline | pandas |
-| Machine learning | PyTorch, PyTorch Geometric |
+| Machine learning | PyTorch 2.4.1, PyTorch Geometric 2.6.1 |
 | Dimensionality reduction | umap-learn |
 | Visualisation | matplotlib, seaborn |
 | API backend | FastAPI, uvicorn |
-| Frontend | React, Vite, D3.js, Recharts |
+| Frontend | React 18, Vite 6, TypeScript 5 |
+| Routing | react-router-dom v7 |
+| Graph viz | D3.js |
+| Charts | Recharts |
 | Testing | pytest |
 
 ---
@@ -130,50 +116,34 @@ Four social network structures, each producing qualitatively different dynamics.
 ## Project Structure
 
 ```
-mosaic/
-├── simulation/
-│   ├── config.py          # SimConfig — all parameters in one place
-│   ├── network.py         # NetworkGenerator — four topologies
-│   ├── agent.py           # AccentAgent — phonetic state + update rule
-│   ├── model.py           # MosaicModel — edge-based scheduling + convergence
-│   ├── logger.py          # DataLogger — CSV + JSON output per run
-│   └── runner.py          # MonteCarloRunner — batch runs + aggregation
-│
-├── analysis/              # Phase 2
-│   ├── clustering.py      # k-means + DBSCAN dialect zone discovery
-│   ├── gcn.py             # GCN trajectory predictor
-│   ├── umap_viz.py        # UMAP coordinate computation
-│   └── shap_analysis.py   # SHAP feature importance (optional)
-│
-├── api/                   # Phase 3
-│   ├── main.py
-│   └── schemas.py
-│
-├── frontend/              # Phase 3
-│   └── src/components/
-│       ├── ControlPanel.jsx
-│       ├── NetworkGraph.jsx
-│       ├── TimeSeries.jsx
-│       └── UMAPScatter.jsx
-│
-├── runs/                  # Auto-generated — one directory per run
-├── results/               # Aggregated outputs and figures
-├── tests/
-├── notebooks/demo.ipynb
-├── research/              # Background research reports
-├── project-docs/          # Full project documentation
-└── requirements.txt
+Mosaic/
+├── simulation/        # Core ABM — config, network, agent, model, logger, runner, metrics
+├── analysis/          # ML pipeline — clustering, GCN, MLP, UMAP
+├── experiments/       # Four experiments + ablations + heatmaps + run_all.py
+├── viz/               # matplotlib figure functions + diffusion GIF generator
+├── api/               # FastAPI backend (main.py + schemas.py)
+├── frontend/          # React + Vite app (src/ with pages, components, hooks, contexts)
+├── tests/             # pytest unit + integration tests (59 tests)
+├── results/
+│   ├── figures/       # 19 PNG/GIF research outputs (tracked in git)
+│   └── ml_results.json
+├── runs/              # Auto-generated simulation outputs (gitignored)
+├── research/          # Background literature notes
+├── notebooks/         # demo.ipynb (Phase 8)
+└── project-docs/      # All specification and design documents
 ```
 
 ---
 
 ## Installation
 
-**Prerequisites:** Python 3.11+, Git
+**Prerequisites:** Python 3.11+, Node.js 18+, Git
 
 ```bash
 git clone https://github.com/AdityaWagh19/Mosaic.git
 cd Mosaic
+
+# Python environment
 python -m venv .venv
 .venv\Scripts\activate        # Windows
 # source .venv/bin/activate   # macOS / Linux
@@ -182,22 +152,11 @@ pip install -r requirements.txt
 
 ---
 
-## Usage
+## Running the Web Interface
 
-**Run a single simulation:**
-```bash
-python -m simulation.runner
-```
-
-**Run tests:**
-```bash
-pytest tests/ -v
-```
-
-**Run the web interface:**
 ```bash
 # Terminal 1 — start the API
-uvicorn api.main:app --reload
+python -m uvicorn api.main:app --reload --port 8000
 
 # Terminal 2 — start the frontend
 cd frontend
@@ -206,7 +165,40 @@ npm run dev
 # Open http://localhost:5173
 ```
 
-**Programmatic use:**
+The frontend connects to the API automatically. Configure the simulation,
+run it, and explore the results across four tabs: time series, network graph,
+UMAP accent space, and raw data export.
+
+---
+
+## Running Experiments
+
+```bash
+# Run all four experiments + ablations + heatmaps (≈ 8 minutes on CPU)
+python -m experiments.run_all
+
+# Run a single simulation
+python -m simulation.runner
+
+# Run a specific experiment
+python -m experiments.exp1_topology
+```
+
+All figures are saved to `results/figures/` at 300 DPI.
+
+---
+
+## Running Tests
+
+```bash
+pytest tests/ -v
+# 59 tests, 0 failures
+```
+
+---
+
+## Programmatic Use
+
 ```python
 from simulation.config import SimConfig
 from simulation.network import make_network
@@ -215,57 +207,65 @@ from simulation.logger import DataLogger
 
 config = SimConfig(topology="watts_strogatz", N=200, T=10000, gamma=1.0, theta=0.30)
 G = make_network(config)
+logger = DataLogger(config)
 model = MosaicModel(config, G)
-metrics = model.run(DataLogger(config))
+metrics = model.run(logger)
 
-print(f"Converged at step {metrics['convergence_time']}")
+print(f"Converged: {metrics['converged']} at step {metrics['convergence_time']}")
 print(f"Final diversity: {metrics['final_diversity']:.3f}")
 ```
 
 ---
 
+## API Reference
+
+The backend exposes 10 endpoints at `http://localhost:8000`. Interactive docs available at `http://localhost:8000/docs`.
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/run` | Run simulation; returns full result payload |
+| `GET` | `/results/{run_id}` | Retrieve a previously completed run |
+| `GET` | `/umap/{run_id}` | UMAP coordinates for 4 timesteps |
+| `GET` | `/runs` | Paginated list of persisted runs |
+| `GET` | `/runs/{id}/export` | Download JSON summary or agent-state CSV |
+| `GET` | `/runs/{id}/snapshots` | Agent-state snapshots for playback |
+| `GET` | `/experiments` | Curated offline experiment archive |
+| `GET` | `/figures/{filename}` | Serve a research figure |
+| `GET` | `/analysis/summary` | ML benchmark results |
+| `GET` | `/config/schema` | UI field metadata |
+
+---
+
 ## Documentation
 
-All design decisions, specifications, and experiments are documented in `project-docs/`.
+All design decisions and specifications in `project-docs/`:
 
 | Document | Contents |
 |---|---|
 | `context.md` | Project identity, research questions, non-goals |
 | `model.md` | Full mathematical specification of the ABM |
 | `architecture.md` | Module specs, API contract, frontend component map |
-| `prd.md` | Functional requirements per phase |
-| `mvp.md` | Phase 1 scope, build order, acceptance criteria |
-| `tasks.md` | Living task tracker for all three phases |
-| `experiments.md` | Pre-specified experimental design and metrics |
+| `prd.md` | Functional requirements per phase (with completion status) |
 | `design.md` | Frontend design system and UI specification |
-| `progress.md` | Running log of decisions and findings |
+| `experiments.md` | Pre-specified experimental design and metrics |
+| `ml-pipeline.md` | ML architecture, training procedure, full results |
+| `progress.md` | Running log of decisions and findings by phase |
+| `tasks.md` | Living task tracker for all phases |
+| `frontend-implementation-plan.md` | Detailed Phase 7 frontend implementation plan |
 
 ---
 
 ## Roadmap
 
-```mermaid
-gantt
-    title Mosaic Development Phases
-    dateFormat  YYYY-MM-DD
-    section Phase 0 — Documentation
-    Project docs complete           :done, p0, 2026-07-09, 1d
-    section Phase 1 — Simulation Core
-    SimConfig + NetworkGenerator    :p1a, after p0, 3d
-    AccentAgent + MosaicModel       :p1b, after p1a, 4d
-    DataLogger + MonteCarloRunner   :p1c, after p1b, 2d
-    Unit test suite                 :p1d, after p1b, 3d
-    Experiments + visualisations    :p1e, after p1c, 7d
-    Animated GIF + README polish    :p1f, after p1e, 2d
-    section Phase 2 — ML Layer
-    Clustering analysis             :p2a, after p1f, 3d
-    GCN predictor + MLP baseline    :p2b, after p2a, 5d
-    UMAP visualisation              :p2c, after p2b, 2d
-    section Phase 3 — Web Interface
-    FastAPI backend                 :p3a, after p2c, 4d
-    React + D3.js frontend          :p3b, after p3a, 10d
-    Integration + polish            :p3c, after p3b, 3d
-```
+| Phase | Status | Description |
+|---|---|---|
+| Phase 0 — Documentation | ✅ Complete | Project docs, design system |
+| Phase 1 — Simulation Core | ✅ Complete | ABM, experiments, 14 figures |
+| Phase 2 — ML Analysis | ✅ Complete | GCN, MLP, UMAP, clustering |
+| Phase 3 — FastAPI Backend | ✅ Complete | 10 endpoints, Pydantic schemas |
+| Phase 4 — React Frontend | ✅ Complete | 5 pages, D3, Recharts, mobile modal |
+| Phase 5 — Repository Cleanup | ✅ Complete | Removed orphaned files |
+| Phase 8 — Integration + Polish | 🔄 In progress | CI, demo notebook, error handling |
 
 ---
 

@@ -122,10 +122,6 @@ and `requirements.txt` updated. Version bump only — no architectural change.
 GPU confirmed: NVIDIA GeForce (4GB VRAM), driver 529.04, CUDA 12.0.
 Driver 529.04 ≥ 527.41 minimum for cu121 — confirmed compatible.
 
-### Deferred to Plan 2
-- Mesa 2.x API compatibility check (Mesa scheduler not used — sidesteps the issue)
-- SBM connectivity guarantee implementation
-
 ---
 
 ## 2026-07-10 — Plan 2: Simulation Engine
@@ -154,19 +150,6 @@ Six modules written and verified:
 - `results/summary.csv`: 25 rows, 11 columns ✓
 - Reproducibility: same seed → bit-identical CSV (0 differences) ✓
 
-### Key Design Decisions
-- **No Mesa scheduler**: MosaicModel controls scheduling via edge-list sampling.
-- **Convergence**: `std(rolling deque of H values) < 0.001` (min 10 entries).
-  With T=10,000 and theta=0.3 (WS default), H variance ~0.01 → rarely triggers;
-  hard cutoff at T handles it cleanly.
-- **k-means caching**: Refit every 500 steps; `predict()` on intervening steps.
-- **Logger buffering**: All rows accumulated in memory; single flush at close().
-
-### Deferred to Plan 3
-- Unit tests for all 6 modules
-- SBM convergence verification (expected to trigger faster than WS)
-
----
 ---
 
 ## 2026-07-10 — Plan 3: Unit Test Suite
@@ -190,15 +173,6 @@ pytest tests/ -v
 59 passed in 3.36s
 ```
 
-### Bug Fixes During Testing
-Five failures identified and resolved before merge:
-
-1. **test_agent — proportional movement**: theta=1.0 < L2(test vectors)≈1.11 → bounded-confidence gate fired. Fix: raised theta to 2.0.
-2. **test_model — hard cutoff**: theta=0.001 → no interactions → H frozen → std(H)=0 triggered "convergence". Fix: T=800, log_every=100 (9 entries < min=10, check never runs).
-3. **test_network — ER node count**: default p_er=0.05 too sparse for N=20 → LCC fallback reduces N. Fix: parametrize over WS+BA only.
-4. **test_network — SBM node count**: same LCC issue. Fix: same as above.
-5. **test_network — SBM 2 communities**: LCC removed community 1. Fix: p_in=0.5, p_out=0.2, seed=7 for reliable density.
-
 ---
 
 ## 2026-07-10 — Plan 4: Experiments + Visualisations ✅ COMPLETE
@@ -206,7 +180,7 @@ Five failures identified and resolved before merge:
 ### Total Runtime
 481 seconds (8.0 min) end-to-end on CPU.
 
-### Outputs — All 14 Files Present
+### All 14 Outputs Present in `results/figures/`
 
 | File | Size | Experiment |
 |---|---|---|
@@ -220,7 +194,7 @@ Five failures identified and resolved before merge:
 | `e3_cross_community_distance.png` | 222 KB | Exp 3 — Contact |
 | `e3_merger_time_bar.png` | 107 KB | Exp 3 — Contact |
 | `ablation_boxplot.png` | 215 KB | Ablations |
-| `scurve.png` | 170 KB | S-Curve V1 |
+| `scurve.png` | 170 KB | S-Curve |
 | `heatmap_convergence_theta.png` | 208 KB | Heatmaps |
 | `heatmap_diversity_gamma.png` | 168 KB | Heatmaps |
 | `diffusion.gif` | 513 KB | GIF (60 frames @ 20 fps) |
@@ -243,24 +217,11 @@ Five failures identified and resolved before merge:
 - A4 (symmetric update) lowest diversity: 1.35 vs Baseline 1.59
 
 **S-Curve (10 WS runs):**
-- R2=0.9349 >= 0.85 — logistic fit confirmed
-- Mechanism: persistent innovators + bidirectional edges + cumulative adoption (gamma=5.0)
-
-**Heatmaps (1,000 parallel runs):**
-- Runtime: 213s via ProcessPoolExecutor
-
-### Bug Fixes During Phase 4
-1. S-curve R2 < 0: asymmetric edge list limited spread. Fix: reversed edges + persistent reset + cumulative adoption + gamma=5.0
-2. cp1252 UnicodeEncodeError: Unicode subscripts in print(). Fix: ASCII (t0, R2)
-3. Pillow ADAPTIVE AttributeError: removed in Pillow 10+. Fix: .quantize(colors=64)
-4. pyrefly false positives from docstring patterns. Fix: plain-prose docstrings
-5. Unused import os in 5 experiment files after switching to Path.mkdir()
-
-*Last updated: 2026-07-10 — Plan 4 (Experiments + Visualisations) complete*
+- R²=0.9349 >= 0.85 — logistic fit confirmed
 
 ---
 
-## 2026-07-10 — Phase 5: ML Analysis Layer
+## 2026-07-10 — Phase 5: ML Analysis Layer ✅ COMPLETE
 
 ### What was built
 - `analysis/_umap_compat.py` — UMAP/TensorFlow compatibility shim
@@ -293,12 +254,116 @@ not which cluster an individual agent ultimately joins.
 - k-means silhouette: 0.089 (weak separation — final space is a continuum)
 - DBSCAN: 1 cluster found — no discrete dialect zones; continuous distribution
 
-### Bug Fixes During Phase 5
-1. `umap` import crash: `parametric_umap.py` uses `tf.keras` at class-definition time.
-   Fix: pre-register `umap.parametric_umap` stub in `sys.modules` (`analysis/_umap_compat.py`).
-2. PyG 2.6.1 y-shape issue with specific batches.
-   Fix: explicit `num_nodes=N` in `Data(...)` constructor.
-3. 4 runs had duplicate agent rows at t_final (Phase 4 re-run artifact).
-   Fix: `drop_duplicates(subset=["timestep","agent_id"], keep="last")` in `load_run`.
+---
 
-*Last updated: 2026-07-10 — Plan 5 (ML Analysis Layer) complete*
+## 2026-07-11 — Phase 6: FastAPI Backend ✅ COMPLETE
+
+### What was built
+
+**`api/schemas.py`** — Pydantic v2 models for all request/response contracts:
+- `RunRequest` — mirrors `SimConfig`, all fields optional with backend defaults
+- `RunResponse` — full result payload including config, metrics, timeline, agent states, network
+- `MetricsData`, `TimelineEntry`, `AgentState`, `NetworkNode`, `NetworkEdge`, `NetworkData`
+
+**`api/main.py`** — FastAPI application with 10 endpoints:
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/run` | Run simulation synchronously; returns full `RunResponse` |
+| `GET` | `/results/{run_id}` | Retrieve result of a previously completed run |
+| `GET` | `/umap/{run_id}` | Compute or retrieve cached UMAP coordinates (4 timesteps) |
+| `GET` | `/runs` | Paginated list of all locally persisted runs; filterable by topology |
+| `GET` | `/runs/{run_id}/export` | Download JSON summary or agent-state CSV |
+| `GET` | `/runs/{run_id}/snapshots` | Raw agent-state snapshots at selected timesteps |
+| `GET` | `/topologies` | Topology metadata for frontend config form |
+| `GET` | `/config/schema` | UI metadata (labels, ranges, help text) for all config fields |
+| `GET` | `/experiments` | Offline experiment archive with figure availability |
+| `GET` | `/figures/{filename}` | Serve curated research figures (allowlist-protected) |
+| `GET` | `/analysis/summary` | ML benchmark results + figure manifest |
+
+**Key implementation decisions:**
+- Simulation runs synchronously (< 30s for N=200, T=10,000) — no async queue needed
+- UMAP coordinates computed on-demand and cached to `runs/{run_id}/umap_coords.json`
+- k-means (k=5) run inline in `_construct_run_response` to supply `cluster_id` per agent
+- Figure serving uses an explicit allowlist to prevent arbitrary filesystem exposure
+- CORS enabled for `localhost:5173` (Vite) and `127.0.0.1:5173`
+- `run_id` format: `{topology}_{seed}_{counter}` (unique across re-runs of same config)
+
+**`tests/test_api.py`** — Integration test suite covering all endpoints.
+
+---
+
+## 2026-07-11 — Phase 7: React Frontend ✅ COMPLETE
+
+### What was built
+
+**Framework:** React 18 + Vite 6 + TypeScript, running at `http://localhost:5173`.
+
+**Routing:** `react-router-dom` v7, five main routes:
+
+| Route | Component | Description |
+|---|---|---|
+| `/` | `LandingPage` | Hero, feature cards, use-case grid, CTA |
+| `/simulate` | `Dashboard` | Full simulation studio with ControlPanel + result tabs |
+| `/runs/:runId` | `Dashboard` | Deep-link to a specific persisted run |
+| `/experiments` | `ExperimentsPage` | Curated research archive with filter + download |
+| `/compare` | `ComparePage` | Side-by-side run comparison picker |
+| `/analysis` | `AnalysisPage` | ML benchmark report + clustering diagnostics |
+| `/guide` | `Guide` | Method explanation inline page |
+
+**Global state:** `SimulationProvider` context (`SimulationContext.tsx`) owns:
+- `config` — current form values mirroring `RunRequest`
+- `result` — full `RunResponse` from last run
+- `umap` — UMAP snapshot data
+- `isRunning` — loading flag
+- `error` — error string
+
+**Components built:**
+
+| File | Description |
+|---|---|
+| `components/simulation/ControlPanel.tsx` | Form with all SimConfig fields; mobile `<dialog>` modal on ≤800px |
+| `components/simulation/ConfigForm.tsx` | Shared form body used by both desktop panel and mobile dialog |
+| `components/visualizations/NetworkGraph.tsx` | D3.js force-directed graph; nodes sized by centrality, coloured by cluster |
+| `components/visualizations/TimeSeriesChart.tsx` | Recharts line chart: diversity + pairwise distance vs timestep |
+| `components/visualizations/UmapScatter.tsx` | D3 scatter with timestep slider over 4 UMAP snapshots |
+| `components/visualizations/SnapshotPlayback.tsx` | Agent-state snapshot scrubber using `/runs/{id}/snapshots` |
+
+**Pages built:**
+
+| File | Key features |
+|---|---|
+| `LandingPage.tsx` | Hero headline, feature grid (3-col), use-case grid (3-col) |
+| `Dashboard.tsx` | 4-tab result view: Overview (chart), Network (D3), Accent space (UMAP), Data (export) |
+| `ExperimentsPage.tsx` | Experiment filter pills, per-figure findings captions, "how to read" disclosures, PNG download buttons |
+| `AnalysisPage.tsx` | MLP/GCN benchmark table, silhouette/DBSCAN diagnostic cards, interpretation section |
+| `ComparePage.tsx` | Two run-picker dropdowns; side-by-side metric comparison |
+
+**Styles:**
+- `styles/tokens.css` — CSS custom properties: colors, spacing, radius, shadows, typography
+- `styles/accessibility.css` — Focus rings and reduced-motion support
+- `index.css` — All layout classes, component classes, mobile breakpoints, `<dialog>` styles
+
+**API client:** `api/client.ts` — typed fetch wrappers for all 10 backend endpoints.
+
+**TypeScript types:** `types/models.ts` — full interface definitions matching backend Pydantic schemas.
+
+### Mobile UX
+- Desktop (> 800px): sticky 300px sidebar panel
+- Mobile (≤ 800px): sidebar hidden, "⚙ Configure run" button opens native `<dialog>` with slide-up animation and backdrop blur
+
+---
+
+## 2026-07-11 — Repository Cleanup
+
+Removed 17 tracked files that were obsolete or orphaned:
+- Root-level planning docs: `IMPLEMENTATION_PLAN.md`, `phase5.5_validation_plan.md`, `phase5.5_validation_walkthrough.md`
+- Orphaned CSS: `components.css`, `landing.css`, `layout.css`, `navbar.css`
+- Orphaned components: `NavBar`, `FeatureCard`, `UseCaseCard`, `Badge`, `Dropdown`, `Slider`, `Button`, `Card`
+- Orphaned layouts: `MainLayout.tsx`, `Sidebar.tsx`
+- Local `runs/` directory cleared (1,467 experiment output directories, gitignored)
+- Python `__pycache__` directories purged locally
+
+---
+
+*Last updated: 2026-07-11 — Phase 7 (React Frontend) complete. Phase 8 (Integration + Polish) next.*
