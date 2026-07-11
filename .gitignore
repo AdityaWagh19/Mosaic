@@ -34,6 +34,7 @@ ENV/
 # ---------------------------------------------------------------------------
 runs/*/
 !runs/.gitkeep
+notebooks/runs/
 
 # ---------------------------------------------------------------------------
 # Results — summary CSV is regenerated from runs, not hand-edited.
