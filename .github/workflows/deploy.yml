@@ -47,4 +47,6 @@ jobs:
           timeout:  300s
           script: |
             cd /home/mosaic/app
+            git fetch origin main
+            git reset --hard origin/main
             bash deploy/deploy.sh

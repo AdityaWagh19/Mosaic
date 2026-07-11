@@ -13,12 +13,9 @@ echo "=== Deploy started at $(date) ==="
 cd "$APP"
 
 # ---------------------------------------------------------------------------
-# 1. Pull latest code
+# 1. Start Deployment
 # ---------------------------------------------------------------------------
-echo "--- Pulling latest code ---"
-git fetch origin main
-git reset --hard origin/main
-echo "Now at: $(git log -1 --oneline)"
+echo "--- Starting backend deployment ---"
 
 # ---------------------------------------------------------------------------
 # 2. Python deps — only reinstalls if requirements.txt changed
