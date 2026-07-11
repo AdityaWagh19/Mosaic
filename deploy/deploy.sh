@@ -35,7 +35,5 @@ $VENV/bin/pip install -r requirements.txt --no-cache-dir --quiet --exists-action
 # ---------------------------------------------------------------------------
 echo "--- Restarting API service ---"
 sudo /bin/systemctl restart mosaic-api
-sleep 3
-sudo /bin/systemctl status mosaic-api --no-pager --lines 5
 
 echo "=== Deploy complete at $(date) ==="
