@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/Mosaic/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mosaic — Accent Evolution Simulator</title>
+    <meta name="description" content="Agent-based simulation of accent and dialect evolution in socially-structured populations. Configure topology, prestige weighting, and confidence bounds to study emergent linguistic patterns." />
+
+    <!--
+      GitHub Pages SPA routing redirect handler.
+      When 404.html redirects to index.html with ?p=..., this script restores
+      the original URL path before React Router hydrates so deep links work.
+      See: frontend/public/404.html
+    -->
+    <script>
+      (function () {
+        var redirect = sessionStorage.getItem('gh-pages-redirect');
+        if (redirect) {
+          sessionStorage.removeItem('gh-pages-redirect');
+          var base = window.location.pathname.replace(/\/[^/]*$/, '') || '/';
+          history.replaceState(null, '', base + redirect.slice(1));
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/Mosaic/assets/index-1mx0nVw1.js"></script>
+    <link rel="stylesheet" crossorigin href="/Mosaic/assets/index-D8AU9y6m.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
