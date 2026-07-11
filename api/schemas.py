@@ -3,28 +3,30 @@ api/schemas.py
 ==============
 Pydantic models for request and response validation in the FastAPI backend.
 """
-from typing import Any
+from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 
 class RunRequest(BaseModel):
     """Request model matching simulation.config.SimConfig."""
-    topology: str = Field(default="watts_strogatz")
-    N: int = Field(default=200)
-    T: int = Field(default=10000)
-    gamma: float = Field(default=1.0)
-    theta: float = Field(default=0.3)
-    sigma: float = Field(default=0.01)
-    seed: int = Field(default=42)
+    topology: Literal["er", "watts_strogatz", "ba", "sbm"] = "watts_strogatz"
+    # Five clusters are computed by the current results pipeline, so smaller
+    # populations cannot produce a valid response.
+    N: int = Field(default=200, ge=5, le=2_000)
+    T: int = Field(default=10_000, ge=1, le=100_000)
+    gamma: float = Field(default=1.0, ge=0.0, le=2.0)
+    theta: float = Field(default=0.3, gt=0.0, le=1.0)
+    sigma: float = Field(default=0.01, ge=0.0, le=0.05)
+    seed: int = Field(default=42, ge=0)
     
     # Topology-specific defaults (can be overridden)
-    p_er: float = Field(default=0.05)
-    k_ws: int = Field(default=6)
-    p_rewire: float = Field(default=0.1)
-    m_ba: int = Field(default=3)
-    n_communities: int = Field(default=2)
-    p_in: float = Field(default=0.3)
-    p_out: float = Field(default=0.05)
+    p_er: float = Field(default=0.05, gt=0.0, le=1.0)
+    k_ws: int = Field(default=6, ge=2, le=200)
+    p_rewire: float = Field(default=0.1, ge=0.0, le=1.0)
+    m_ba: int = Field(default=3, ge=1, le=100)
+    n_communities: int = Field(default=2, ge=2, le=2)
+    p_in: float = Field(default=0.15, gt=0.0, le=1.0)
+    p_out: float = Field(default=0.02, ge=0.0, le=1.0)
 
 
 class NetworkNode(BaseModel):

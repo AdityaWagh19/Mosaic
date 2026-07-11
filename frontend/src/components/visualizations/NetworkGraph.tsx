@@ -1,28 +1,5 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { useD3Network } from '../../hooks/useD3Network';
 import { useResizeObserver } from '../../hooks/useResizeObserver';
-import type { NetworkNode, NetworkEdge, AgentState } from '../../types/models';
-
-interface NetworkGraphProps {
-  nodes: NetworkNode[];
-  edges: NetworkEdge[];
-  agentStates: AgentState[];
-}
-
-export const NetworkGraph: React.FC<NetworkGraphProps> = ({ nodes, edges, agentStates }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { width, height } = useResizeObserver(containerRef);
-  
-  const svgRef = useD3Network({ nodes, edges, agentStates, width, height });
-
-  return (
-    <div style={{ width: '100%', height: '500px', display: 'flex', flexDirection: 'column' }}>
-      <h3 style={{ marginBottom: 'var(--spacing-16)', fontFamily: 'var(--font-egyptienne-f-lt)', fontSize: 'var(--text-heading-sm)' }}>
-        Network Structure
-      </h3>
-      <div ref={containerRef} style={{ flex: 1, backgroundColor: 'var(--surface-canvas)', border: '1px solid var(--color-paper-cool)', borderRadius: 'var(--radius-cards)', overflow: 'hidden' }}>
-        <svg ref={svgRef} width="100%" height="100%" style={{ display: 'block' }} />
-      </div>
-    </div>
-  );
-};
+import type { AgentState, NetworkEdge, NetworkNode } from '../../types/models';
+export function NetworkGraph({nodes,edges,agentStates}:{nodes:NetworkNode[];edges:NetworkEdge[];agentStates:AgentState[]}){const container=useRef<HTMLDivElement>(null);const {width,height}=useResizeObserver(container);const svg=useD3Network({nodes,edges,agentStates,width,height});return <><h2 style={{fontSize:20}}>Final social network</h2><p className="lede">Node size represents relative degree centrality. Data-view colors represent final accent clusters.</p><div className="viz" ref={container} style={{border:'1px solid var(--color-hairline)',borderRadius:'var(--radius-cards)',overflow:'hidden'}}><svg ref={svg} width="100%" height="100%" role="img" aria-label="Final network graph"><title>Final social network graph</title><desc>Use the agent data table below to inspect all values without using the graph.</desc></svg></div><details style={{marginTop:16}}><summary>Agent data table</summary><div style={{overflowX:'auto'}}><table><thead><tr><th>Agent</th><th>Community</th><th>Cluster</th><th>Centrality</th></tr></thead><tbody>{agentStates.map(agent=><tr key={agent.agent_id}><td>{agent.agent_id}</td><td>{agent.community_id}</td><td>{agent.cluster_id}</td><td>{agent.centrality.toFixed(3)}</td></tr>)}</tbody></table></div></details></>}

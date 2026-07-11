@@ -1,19 +1,8 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import { SimulationProvider } from './contexts/SimulationContext';
-import { LandingPage } from './pages/LandingPage';
-import { Dashboard } from './pages/Dashboard';
-
-function App() {
-  return (
-    <Router>
-      <SimulationProvider>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/simulation" element={<Dashboard />} />
-        </Routes>
-      </SimulationProvider>
-    </Router>
-  );
-}
-
-export default App;
+const LandingPage=lazy(()=>import('./pages/LandingPage').then(module=>({default:module.LandingPage})));const Dashboard=lazy(()=>import('./pages/Dashboard').then(module=>({default:module.Dashboard})));const ExperimentsPage=lazy(()=>import('./pages/ExperimentsPage').then(module=>({default:module.ExperimentsPage})));const ComparePage=lazy(()=>import('./pages/ComparePage').then(module=>({default:module.ComparePage})));const AnalysisPage=lazy(()=>import('./pages/AnalysisPage').then(module=>({default:module.AnalysisPage})));
+function Nav(){return <nav className="nav" aria-label="Main navigation"><Link className="brand" to="/">Mosaic</Link><div className="nav-links"><Link to="/simulate">Simulator</Link><Link to="/experiments">Experiments</Link><Link to="/compare">Compare</Link><Link to="/analysis">ML analysis</Link><Link to="/guide">Method</Link></div><Link className="btn btn-primary" to="/simulate">Run a simulation →</Link></nav>}
+function Guide(){return <main className="shell"><Nav/><section className="hero"><p className="eyebrow">METHOD GUIDE</p><h1>From social ties to accent patterns.</h1><p className="lede">Each agent holds six synthetic phonetic features. At every step, one connected pair may accommodate if their accents are close enough. Network centrality, the confidence bound, and random drift shape the outcome.</p><details><summary>How to read a run</summary><p>Topology determines who can interact. Prestige weights influence by centrality. The confidence bound prevents accommodation between agents whose accents are too distant. Diversity and pairwise distance describe the resulting population state.</p></details><Link className="btn btn-primary" to="/simulate">Try the baseline →</Link></section></main>}
+function NotFound(){return <main className="shell"><Nav/><div className="empty"><div><h2>That page is not here.</h2><p>Return to Mosaic’s simulation studio to start a run.</p><Link className="btn btn-primary" to="/simulate">Open simulator →</Link></div></div></main>}
+export default function App(){return <BrowserRouter><SimulationProvider><Suspense fallback={<main className="shell"><Nav/><div className="empty"><span className="spinner"/></div></main>}><Routes><Route path="/" element={<LandingPage nav={<Nav/>}/>}/><Route path="/simulate" element={<Dashboard nav={<Nav/>}/>}/><Route path="/runs/:runId" element={<Dashboard nav={<Nav/>}/>}/><Route path="/experiments" element={<ExperimentsPage nav={<Nav/>}/>}/><Route path="/compare" element={<ComparePage nav={<Nav/>}/>}/><Route path="/analysis" element={<AnalysisPage nav={<Nav/>}/>}/><Route path="/guide" element={<Guide/>}/><Route path="*" element={<NotFound/>}/></Routes></Suspense></SimulationProvider></BrowserRouter>}

@@ -52,7 +52,7 @@ export const useD3Scatter = ({ coords, agentStates, width, height }: UseD3Scatte
         .join("circle")
         .attr("r", 4)
         .attr("fill", (_d, i) => getClusterColor(agentStates[i]?.cluster_id ?? 0))
-        .attr("stroke", "var(--color-white)")
+        .attr("stroke", "var(--color-paper)")
         .attr("stroke-width", 0.5)
         .attr("cx", d => xScale(d[0]))
         .attr("cy", d => yScale(d[1]))

@@ -1,63 +1,23 @@
-import React from 'react';
-import { MainLayout } from '../layouts/MainLayout';
-import { Sidebar } from '../layouts/Sidebar';
+import { useEffect } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ControlPanel } from '../components/simulation/ControlPanel';
-import { useSimulation } from '../contexts/SimulationContext';
 import { NetworkGraph } from '../components/visualizations/NetworkGraph';
+import { SnapshotPlayback } from '../components/visualizations/SnapshotPlayback';
 import { TimeSeriesChart } from '../components/visualizations/TimeSeriesChart';
 import { UmapScatter } from '../components/visualizations/UmapScatter';
-
-export const Dashboard: React.FC = () => {
-  const { globalError, isSimulating, result } = useSimulation();
-
-  return (
-    <MainLayout
-      sidebar={
-        <Sidebar>
-          <ControlPanel />
-        </Sidebar>
-      }
-    >
-      {globalError && (
-        <div style={{ padding: 'var(--spacing-16)', backgroundColor: 'var(--color-mist)', color: 'var(--color-ink)', borderRadius: 'var(--radius-cards)', marginBottom: 'var(--spacing-24)' }}>
-          <strong>Error:</strong> {globalError}
-        </div>
-      )}
-
-      {isSimulating ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 'var(--spacing-16)' }}>
-          <span className="spinner" style={{ borderColor: 'rgba(39, 36, 33, 0.2)', borderTopColor: 'var(--color-ink)', width: '32px', height: '32px' }}></span>
-          <p style={{ color: 'var(--color-stone)' }}>Simulating agents...</p>
-        </div>
-      ) : !result ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-          <h2 style={{ color: 'var(--color-stone)', textAlign: 'center' }}>
-            Adjust parameters and<br/>Run Simulation to begin
-          </h2>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--section-gap)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderBottom: '1px solid var(--color-paper-warm)', paddingBottom: 'var(--spacing-16)' }}>
-            <h2 style={{ fontFamily: 'var(--font-egyptienne-f-lt)', fontSize: 'var(--text-heading-lg)' }}>
-              Simulation Result
-            </h2>
-            <div style={{ display: 'flex', gap: 'var(--spacing-16)' }}>
-              <div className="badge">Converged: {result.metrics.converged ? 'Yes' : 'No'}</div>
-              <div className="badge">Time: {result.metrics.convergence_time} steps</div>
-            </div>
-          </div>
-          
-          <NetworkGraph 
-            nodes={result.network.nodes} 
-            edges={result.network.edges} 
-            agentStates={result.final_agent_states} 
-          />
-          
-          <TimeSeriesChart data={result.timeline} />
-          
-          <UmapScatter />
-        </div>
-      )}
-    </MainLayout>
-  );
-};
+import { exportUrl } from '../api/client';
+import { useSimulation } from '../contexts/SimulationContext';
+type Tab='overview'|'network'|'accent'|'data';
+export function Dashboard({nav}:{nav:React.ReactNode}){
+ const {runId}=useParams();const navigate=useNavigate();const [params,setParams]=useSearchParams();
+ const {result,umap,error,isRunning,load,clear,setConfig}=useSimulation();const tab=(params.get('tab') as Tab)||'overview';
+ useEffect(()=>{if(runId)void load(runId);else clear();},[runId]);
+ const copy=async()=>{if(result)await navigator.clipboard?.writeText(`${window.location.origin}/runs/${result.run_id}`)};
+ return <main className="shell">{nav}<div className="studio"><ControlPanel/><section aria-live="polite">
+ {error?<div className="notice error"><strong>This run could not be completed.</strong><br/>{error}</div>:isRunning?<div className="empty"><div><span className="spinner"/><h2>Running the simulation…</h2><p>The model is computing interactions locally. A default run may take up to a minute.</p></div></div>:!result?<div className="empty"><div><h2>Start with a question.</h2><p>Choose a topology and parameters, then run the model. Your results will appear here.</p></div></div>:<>
+ <header className="run-header"><div><p className="eyebrow">COMPLETED RUN</p><h1>Run complete</h1><p>{result.run_id} · <span className="status">{result.metrics.converged?'Converged':'Maximum steps reached'}</span></p></div><div className="actions"><button className="btn btn-secondary" onClick={()=>void copy()}>Copy run link</button><button className="btn btn-secondary" onClick={()=>{setConfig(result.config);navigate('/simulate')}}>Duplicate configuration</button></div></header>
+ <div className="metrics"><Metric label="Run status" value={result.metrics.converged?'Converged':'Maximum reached'}/><Metric label="Convergence time" value={result.metrics.converged?`${result.metrics.convergence_time} steps`:'Not reached'}/><Metric label="Final diversity" value={`H = ${result.metrics.final_diversity.toFixed(3)}`}/><Metric label="Pairwise distance" value={`D = ${result.metrics.final_pairwise_distance.toFixed(3)}`}/></div>
+ <div className="tabs" role="tablist" aria-label="Result views">{(['overview','network','accent','data'] as Tab[]).map(item=><button key={item} role="tab" className="tab" aria-selected={tab===item} aria-controls={`${item}-panel`} onClick={()=>setParams({tab:item})}>{item==='accent'?'Accent space':item[0].toUpperCase()+item.slice(1)}</button>)}</div>
+ <div role="tabpanel" id={`${tab}-panel`}>{tab==='overview'&&<div className="panel"><h2 style={{fontSize:20}}>How the population changed</h2><p className="lede">Diversity tracks accent-cluster distribution. Pairwise distance is the average separation between six-dimensional accent vectors.</p><TimeSeriesChart data={result.timeline}/><details><summary>Time-series data</summary><table><thead><tr><th>Step</th><th>Diversity</th><th>Pairwise distance</th></tr></thead><tbody>{result.timeline.map(point=><tr key={point.timestep}><td>{point.timestep}</td><td>{point.diversity.toFixed(4)}</td><td>{point.pairwise_distance.toFixed(4)}</td></tr>)}</tbody></table></details></div>}{tab==='network'&&<div className="panel"><NetworkGraph nodes={result.network.nodes} edges={result.network.edges} agentStates={result.final_agent_states}/></div>}{tab==='accent'&&<div className="panel"><UmapScatter data={umap} agentStates={result.final_agent_states}/></div>}{tab==='data'&&<div className="panel"><h2 style={{fontSize:20}}>Reproducibility details</h2><p className="lede">Use the same configuration and seed to reproduce this model run.</p><div className="actions"><a className="btn btn-primary" href={exportUrl(result.run_id,'json')}>Download JSON</a><a className="btn btn-secondary" href={exportUrl(result.run_id,'csv')}>Download agent CSV</a></div><div className="data-list">{Object.entries(result.config).filter(([key])=>key!=='run_id').map(([key,value])=><div key={key}><span>{key.replace(/_/g,' ')}</span>{String(value)}</div>)}</div><SnapshotPlayback runId={result.run_id}/></div>}</div></>}</section></div></main>
+}
+function Metric({label,value}:{label:string;value:string}){return <div className="metric"><span>{label}</span><strong>{value}</strong></div>}

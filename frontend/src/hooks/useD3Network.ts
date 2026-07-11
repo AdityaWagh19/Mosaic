@@ -52,7 +52,7 @@ export const useD3Network = ({ nodes, edges, agentStates, width, height }: UseD3
       .selectAll("line")
       .data(graphEdges)
       .join("line")
-      .attr("stroke", "var(--color-paper-cool)")
+      .attr("stroke", "var(--color-hairline)")
       .attr("stroke-width", 1)
       .attr("stroke-opacity", 0.6);
 
@@ -63,7 +63,7 @@ export const useD3Network = ({ nodes, edges, agentStates, width, height }: UseD3
       .join("circle")
       .attr("r", (d: any) => 3 + d.centrality * 12)
       .attr("fill", (d: any) => getClusterColor(d.cluster_id))
-      .attr("stroke", "var(--color-white)")
+      .attr("stroke", "var(--color-paper)")
       .attr("stroke-width", 1);
 
     // Tooltips (simple title for now, can be expanded to HTML tooltip)

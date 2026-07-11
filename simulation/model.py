@@ -266,7 +266,7 @@ class MosaicModel(mesa.Model):
         final_d = m.mean_pairwise_distance(final_accent_mat)
 
         metrics_dict = {
-            "run_id":                  config.run_id,
+            "run_id":                  log.run_id,
             "topology":                config.topology,
             "gamma":                   config.gamma,
             "theta":                   config.theta,
@@ -283,7 +283,7 @@ class MosaicModel(mesa.Model):
 
         logger.info(
             "Run %s complete | converged=%s | t_conv=%d | H=%.4f | D=%.4f",
-            config.run_id, converged, t_conv, final_h, final_d,
+            log.run_id, converged, t_conv, final_h, final_d,
         )
 
         return {**metrics_dict, "timeline": timeline}

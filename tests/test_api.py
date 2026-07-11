@@ -78,13 +78,10 @@ def test_run_endpoint_and_umap(client):
     assert umap_response.status_code == 200
     umap_data = umap_response.json()
     
-    # Check that there is at least one timestep key
-    keys = list(umap_data.keys())
-    assert len(keys) > 0
-    # Check that the coordinate array has 20 elements (for N=20)
-    assert len(umap_data[keys[0]]) == 20
-    # Check that each coordinate is 2D
-    assert len(umap_data[keys[0]][0]) == 2
+    snapshots = umap_data["snapshots"]
+    assert len(snapshots) > 0
+    assert len(snapshots[0]["points"]) == 20
+    assert {"agent_id", "x", "y", "community_id"} <= set(snapshots[0]["points"][0])
 
 
 def test_404_not_found(client):

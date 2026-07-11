@@ -25,6 +25,7 @@ Design notes
 from __future__ import annotations
 
 import csv
+import hashlib
 import io
 import json
 import logging
@@ -69,16 +70,33 @@ class DataLogger:
 
     def __init__(self, config: SimConfig) -> None:
         self.config = config
-        self.run_id: str = config.run_id
         self.module_logger = module_logger
 
-        # Create run directory
-        self.run_dir: Path = _RUNS_ROOT / self.run_id
-        self.run_dir.mkdir(parents=True, exist_ok=True)
+        # Preserve the readable deterministic base ID, but never overwrite an
+        # existing run when the same topology/seed is submitted again.
+        base_run_id = config.run_id
+        self.run_id = base_run_id
+        self.run_dir = _RUNS_ROOT / self.run_id
+        suffix = 2
+        while self.run_dir.exists():
+            self.run_id = f"{base_run_id}_{suffix}"
+            self.run_dir = _RUNS_ROOT / self.run_id
+            suffix += 1
+        self.run_dir.mkdir(parents=True, exist_ok=False)
 
-        # Write config.json immediately (before simulation starts)
+        # Store metadata alongside the configuration so a saved run can be
+        # identified and audited without changing SimConfig's public shape.
+        config_data = config.to_dict()
+        canonical_config = json.dumps(config_data, sort_keys=True, separators=(",", ":"))
+        config_data["run_id"] = self.run_id
+        config_data["config_fingerprint"] = hashlib.sha256(
+            canonical_config.encode("utf-8")
+        ).hexdigest()[:12]
+
+        # Write config.json immediately (before simulation starts).
         config_path = self.run_dir / "config.json"
-        config.save(str(config_path))
+        with open(config_path, "w", encoding="utf-8") as fh:
+            json.dump(config_data, fh, indent=2)
 
         # Internal buffer for agent state rows (flushed in close())
         self._rows: list[list] = []

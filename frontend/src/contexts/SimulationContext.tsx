@@ -1,97 +1,21 @@
-import React, { createContext, useContext, useState } from 'react';
-import type { ReactNode } from 'react';
-import type { SimConfig, RunResponse, UmapResponse } from '../types/models';
-import { runSimulation, fetchUmap } from '../api/client';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { fetchResult, fetchUmap, runSimulation } from '../api/client';
+import type { RunResponse, SimConfig, UmapResponse } from '../types/models';
 
-interface SimulationContextProps {
-  config: SimConfig;
-  setConfig: React.Dispatch<React.SetStateAction<SimConfig>>;
-  
-  isSimulating: boolean;
-  globalError: string | null;
-  
-  result: RunResponse | null;
-  umapData: UmapResponse | null;
-  selectedTimestep: number;
-  setSelectedTimestep: React.Dispatch<React.SetStateAction<number>>;
-  
-  executeRun: () => Promise<void>;
+const defaultConfig: SimConfig = { topology: 'watts_strogatz', N: 200, T: 10000, gamma: 1, theta: 0.3, sigma: 0.01, seed: 42, p_er: 0.05, k_ws: 6, p_rewire: 0.1, m_ba: 3, n_communities: 2, p_in: 0.15, p_out: 0.02 };
+type SimulationState = {
+  config: SimConfig; setConfig: (config: SimConfig) => void; result: RunResponse | null; umap: UmapResponse | null;
+  isRunning: boolean; error: string | null; run: () => Promise<RunResponse | null>; load: (id: string) => Promise<void>; clear: () => void;
+};
+const Context = createContext<SimulationState | undefined>(undefined);
+
+export function SimulationProvider({ children }: { children: ReactNode }) {
+  const [config, setConfig] = useState<SimConfig>(() => { try { return { ...defaultConfig, ...JSON.parse(localStorage.getItem('mosaic:draft-config') ?? '{}') }; } catch { return defaultConfig; } }); const [result, setResult] = useState<RunResponse | null>(null);
+  const [umap, setUmap] = useState<UmapResponse | null>(null); const [isRunning, setRunning] = useState(false); const [error, setError] = useState<string | null>(null);
+  const hydrateUmap = (id: string) => fetchUmap(id).then(setUmap).catch(() => setUmap(null));
+  useEffect(() => { localStorage.setItem('mosaic:draft-config', JSON.stringify(config)); }, [config]);
+  const run = async () => { setRunning(true); setError(null); setResult(null); setUmap(null); try { const next = await runSimulation(config); setResult(next); setConfig(next.config); void hydrateUmap(next.run_id); return next; } catch (cause) { setError(cause instanceof Error ? cause.message : 'Simulation failed.'); return null; } finally { setRunning(false); } };
+  const load = async (id: string) => { setRunning(true); setError(null); setResult(null); setUmap(null); try { const next = await fetchResult(id); setResult(next); setConfig(next.config); void hydrateUmap(id); } catch (cause) { setError(cause instanceof Error ? cause.message : 'Run could not be loaded.'); } finally { setRunning(false); } };
+  return <Context.Provider value={{ config, setConfig, result, umap, isRunning, error, run, load, clear: () => { setResult(null); setUmap(null); setError(null); } }}>{children}</Context.Provider>;
 }
-
-const DEFAULT_CONFIG: SimConfig = {
-  topology: 'watts_strogatz',
-  N: 200,
-  T: 5000,
-  gamma: 1.0,
-  theta: 0.3,
-  sigma: 0.01,
-  seed: 42,
-  p_er: 0.05,
-  k_ws: 6,
-  p_rewire: 0.1,
-  m_ba: 3,
-  n_communities: 2,
-  p_in: 0.3,
-  p_out: 0.05
-};
-
-const SimulationContext = createContext<SimulationContextProps | undefined>(undefined);
-
-export const SimulationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [config, setConfig] = useState<SimConfig>(DEFAULT_CONFIG);
-  const [isSimulating, setIsSimulating] = useState(false);
-  const [globalError, setGlobalError] = useState<string | null>(null);
-  
-  const [result, setResult] = useState<RunResponse | null>(null);
-  const [umapData, setUmapData] = useState<UmapResponse | null>(null);
-  const [selectedTimestep, setSelectedTimestep] = useState(0);
-
-  const executeRun = async () => {
-    setIsSimulating(true);
-    setGlobalError(null);
-    setResult(null);
-    setUmapData(null);
-    setSelectedTimestep(0);
-
-    try {
-      const response = await runSimulation(config);
-      setResult(response);
-      
-      // Asynchronously fetch UMAP data
-      fetchUmap(response.run_id).then(data => {
-        setUmapData(data);
-        const timesteps = Object.keys(data).map(Number).sort((a,b)=>a-b);
-        if (timesteps.length > 0) {
-          setSelectedTimestep(timesteps[timesteps.length - 1]);
-        }
-      }).catch(err => {
-        console.error("UMAP fetch failed:", err);
-      });
-      
-    } catch (err: any) {
-      setGlobalError(`Simulation failed: ${err.message}`);
-    } finally {
-      setIsSimulating(false);
-    }
-  };
-
-  return (
-    <SimulationContext.Provider value={{
-      config, setConfig,
-      isSimulating, globalError,
-      result, umapData,
-      selectedTimestep, setSelectedTimestep,
-      executeRun
-    }}>
-      {children}
-    </SimulationContext.Provider>
-  );
-};
-
-export const useSimulation = () => {
-  const context = useContext(SimulationContext);
-  if (context === undefined) {
-    throw new Error('useSimulation must be used within a SimulationProvider');
-  }
-  return context;
-};
+export function useSimulation() { const value = useContext(Context); if (!value) throw new Error('useSimulation must be used inside SimulationProvider.'); return value; }
