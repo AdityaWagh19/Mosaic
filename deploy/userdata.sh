@@ -23,6 +23,11 @@ echo "=== System packages installed ==="
 # 2. Create app user
 # ---------------------------------------------------------------------------
 useradd -m -s /bin/bash mosaic || true
+mkdir -p /home/mosaic/.ssh
+cp /home/ubuntu/.ssh/authorized_keys /home/mosaic/.ssh/
+chown -R mosaic:mosaic /home/mosaic/.ssh
+chmod 700 /home/mosaic/.ssh
+chmod 600 /home/mosaic/.ssh/authorized_keys
 
 # ---------------------------------------------------------------------------
 # 3. Clone repo
