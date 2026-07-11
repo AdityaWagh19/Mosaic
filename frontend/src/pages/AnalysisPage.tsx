@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
 import { fetchAnalysis, figureUrl } from '../api/client';
 import type { AnalysisSummary } from '../types/models';
+import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
 
 interface MetricCardProps { label: string; value: string; sub?: string; highlight?: boolean }
 function MetricCard({ label, value, sub, highlight }: MetricCardProps) {
   return (
     <div
       className="metric"
-      style={{ background: highlight ? 'var(--color-ink,#000)' : undefined, color: highlight ? '#fff' : undefined }}
+      style={{ borderTop: highlight ? '2px solid var(--color-signal-blue)' : undefined }}
     >
-      <span style={{ color: highlight ? 'rgba(255,255,255,0.65)' : undefined }}>{label}</span>
+      <span>{label}</span>
       <strong style={{ fontSize: 28 }}>{value}</strong>
       {sub && <small style={{ display: 'block', fontSize: 11, opacity: 0.7, marginTop: 2 }}>{sub}</small>}
     </div>
@@ -44,9 +45,11 @@ export function AnalysisPage({ nav }: { nav: React.ReactNode }) {
           <br /><small>Make sure the backend is running and <code>results/ml_results.json</code> exists.</small>
         </div>
       ) : !data ? (
-        <div className="empty"><span className="spinner" /></div>
+        <section className="section"><span className="spinner" aria-label="Loading analysis" /><LoadingSkeleton chart /><div style={{ height: 16 }} /><LoadingSkeleton /></section>
       ) : (
         <>
+          <section className="result-statement" aria-labelledby="ml-conclusion"><span className="result-statement-label">Plain-language conclusion</span><div><h2 id="ml-conclusion" className="panel-title">Initial accent features were more predictive than the tested graph representation.</h2><p>The MLP outperformed the tested GCN on this synthetic benchmark. This is a benchmark result, not evidence about real-world accent change.</p></div></section>
+          <section className="panel" style={{ marginBottom: 32 }}><h2 className="panel-title">Question and scope</h2><p className="panel-description">Can initial speaker features and social-network structure predict a speaker’s final k-means cluster? The target is a post-hoc partition of simulated accent vectors, so it is a useful diagnostic rather than a discovered dialect label.</p></section>
           {/* ── Benchmark summary cards ─────────────────────────────── */}
           <section aria-labelledby="benchmark-heading" style={{ marginBottom: 48 }}>
             <h2 id="benchmark-heading" style={{ fontSize: 20, marginBottom: 16 }}>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { fetchExperiments, figureUrl } from '../api/client';
 import type { Experiment } from '../types/models';
+import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
 
 const FINDINGS: Record<string, {
   figures: Record<string, { finding: string; howToRead: string }>;
@@ -86,11 +87,12 @@ export function ExperimentsPage({ nav }: { nav: React.ReactNode }) {
   const [items, setItems] = useState<Experiment[]>([]);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<string>('all');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     void fetchExperiments()
       .then(data => setItems(data.items))
-      .catch(cause => setError(cause.message));
+      .catch(cause => setError(cause.message)).finally(() => setLoading(false));
   }, []);
 
   const displayed = filter === 'all' ? items : items.filter(i => i.id === filter);
@@ -134,7 +136,7 @@ export function ExperimentsPage({ nav }: { nav: React.ReactNode }) {
           <strong>Could not load experiments.</strong><br />{error}
           <br /><small>Make sure the backend is running and experiment figures have been generated.</small>
         </div>
-      ) : (
+      ) : loading ? <section className="section"><LoadingSkeleton chart /><div style={{ height: 16 }} /><LoadingSkeleton chart /></section> : (
         <div>
           {displayed.map(item => {
             const findings = FINDINGS[item.id]?.figures ?? {};
@@ -151,6 +153,7 @@ export function ExperimentsPage({ nav }: { nav: React.ReactNode }) {
                     {item.title}
                   </h2>
                   <p className="lede" style={{ margin: 0 }}>{item.summary}</p>
+                  <div className="experiment-brief"><span><strong>Research question</strong>{item.id === 'topology' ? 'How does network structure change convergence?' : item.id === 'prestige' ? 'How does centrality affect influence?' : item.id === 'contact' ? 'When do communities become accent-similar?' : 'Do the model mechanisms behave as expected?'}</span><span><strong>Evidence</strong>Multiple seeds and publication-ready figures</span></div>
                 </header>
 
                 {item.available.length === 0 ? (

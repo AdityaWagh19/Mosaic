@@ -10,9 +10,11 @@ interface UseD3NetworkProps {
   agentStates: AgentState[];
   width: number;
   height: number;
+  onSelect?: (agentId: number) => void;
+  showLabels?: boolean;
 }
 
-export const useD3Network = ({ nodes, edges, agentStates, width, height }: UseD3NetworkProps) => {
+export const useD3Network = ({ nodes, edges, agentStates, width, height, onSelect, showLabels = false }: UseD3NetworkProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
@@ -65,7 +67,14 @@ export const useD3Network = ({ nodes, edges, agentStates, width, height }: UseD3
       .attr("r", (d: any) => 3 + d.centrality * 12)
       .attr("fill", (d: any) => getClusterColor(d.cluster_id))
       .attr("stroke", "var(--color-paper)")
-      .attr("stroke-width", 1);
+      .attr("stroke-width", 1)
+      .attr("tabindex", 0)
+      .attr("role", "button")
+      .attr("aria-label", (d: any) => `Inspect speaker ${d.id}`)
+      .on("click", (_event, d: any) => onSelect?.(d.id))
+      .on("keydown", (event: KeyboardEvent, d: any) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect?.(d.id); } });
+
+    if (showLabels) g.append('g').selectAll('text').data(graphNodes as any).join('text').text((d: any) => d.id).attr('font-size', 9).attr('fill', '#525252').attr('text-anchor', 'middle').attr('dy', -8).attr('pointer-events', 'none');
 
     // Tooltips (simple title for now, can be expanded to HTML tooltip)
     node.append("title")
@@ -101,7 +110,7 @@ export const useD3Network = ({ nodes, edges, agentStates, width, height }: UseD3
     return () => {
       simulation.stop();
     };
-  }, [nodes, edges, agentStates, width, height]);
+  }, [nodes, edges, agentStates, width, height, onSelect, showLabels]);
 
   return svgRef;
 };

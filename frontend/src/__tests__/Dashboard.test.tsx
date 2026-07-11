@@ -8,7 +8,7 @@
  *   - Completed result renders metrics and tab list
  *   - Tab click updates ?tab= search param
  */
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
@@ -112,6 +112,6 @@ describe('Dashboard — completed result', () => {
     await renderDashboard();
     const networkTab = screen.getByRole('tab', { name: /network/i });
     fireEvent.click(networkTab);
-    expect(networkTab).toHaveAttribute('aria-selected', 'true');
+    await waitFor(() => expect(screen.getByRole('tab', { name: /network/i })).toHaveAttribute('aria-selected', 'true'));
   });
 });

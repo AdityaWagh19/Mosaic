@@ -1,0 +1,1 @@
+export function LoadingSkeleton({ chart = false }: { chart?: boolean }) { return <div className="skeleton" role="status" aria-label="Loading content"><div className="skeleton-line wide" /><div className="skeleton-line" />{chart && <div className="skeleton-chart" />}<span className="sr-only">Loading content</span></div>; }

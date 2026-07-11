@@ -70,6 +70,7 @@ function ConfigForm({
   schema: ConfigSchema;
   onClose?: () => void;
 }) {
+  const [activePreset, setActivePreset] = useState('');
   const change = (key: keyof SimConfig, value: number | string) =>
     setConfig({ ...config, [key]: value } as SimConfig);
 
@@ -95,20 +96,9 @@ function ConfigForm({
         )}
       </div>
 
-      <div className="field">
-        <label htmlFor="preset">Start from a preset</label>
-        <select
-          id="preset"
-          defaultValue=""
-          onChange={e => {
-            const preset = presets[e.target.value];
-            if (preset) setConfig({ ...config, ...preset });
-          }}
-        >
-          <option value="">Custom configuration</option>
-          {Object.keys(presets).map(key => <option key={key}>{key}</option>)}
-        </select>
-      </div>
+      <div className="control-group">
+      <p className="control-group-label">Question</p>
+      <fieldset className="preset-options"><legend>Start from a preset</legend>{Object.keys(presets).map(key => <label key={key} className={activePreset === key ? 'is-selected' : ''}><input type="radio" name="preset" value={key} checked={activePreset === key} onChange={() => { setActivePreset(key); setConfig({ ...config, ...presets[key] }); }} /><span><strong>{key}</strong><small>{key === 'Hub influence' ? 'Highly connected speakers can shape the final pattern.' : key === 'Two-community contact' ? 'Bridge ties determine whether communities merge.' : key === 'Quiet convergence' ? 'Isolate social accommodation without random drift.' : 'Local clusters with occasional shortcuts.'}</small></span></label>)}</fieldset>
 
       <div className="field">
         <label htmlFor="topology">Network topology</label>
@@ -126,18 +116,22 @@ function ConfigForm({
         </select>
         <small>{topologies[config.topology]?.desc}</small>
       </div>
+      </div>
 
-      {(['N', 'T', 'gamma', 'theta', 'sigma'] as const).map(key => (
-        <RangeField key={key} field={key} config={config} schema={schema} onChange={change} disabled={isRunning} />
-      ))}
+      <div className="control-group">
+      <p className="control-group-label">Population and dynamics</p>
+      {(['N', 'T', 'gamma', 'theta', 'sigma'] as const).map(key => <RangeField key={key} field={key} config={config} schema={schema} onChange={change} disabled={isRunning} />)}
+      </div>
 
-      <h3 style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--color-ash)', margin: '24px 0 0' }}>
-        Topology parameters
-      </h3>
+      <div className="control-group">
+      <p className="control-group-label">Network details</p>
       {params.map(key => (
         <RangeField key={key} field={key as keyof SimConfig} config={config} schema={schema} onChange={change} disabled={isRunning} />
       ))}
+      </div>
 
+      <div className="control-group">
+      <p className="control-group-label">Reproducibility</p>
       <div className="field">
         <label htmlFor="seed">Random seed</label>
         <input
@@ -149,6 +143,7 @@ function ConfigForm({
           onChange={e => change('seed', Number(e.target.value))}
         />
         <small>{schema.fields.seed?.help ?? 'Reuse to reproduce a configuration.'}</small>
+      </div>
       </div>
 
       <button
