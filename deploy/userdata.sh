@@ -20,6 +20,17 @@ apt-get install -y \
 echo "=== System packages installed ==="
 
 # ---------------------------------------------------------------------------
+# 1.5 Setup Swap space
+# ---------------------------------------------------------------------------
+fallocate -l 2G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo '/swapfile none swap sw 0 0' >> /etc/fstab
+
+echo "=== Swap space configured ==="
+
+# ---------------------------------------------------------------------------
 # 2. Create app user
 # ---------------------------------------------------------------------------
 useradd -m -s /bin/bash mosaic || true
@@ -45,9 +56,9 @@ sudo -u mosaic python3.11 -m venv /home/mosaic/app/.venv
 sudo -u mosaic /home/mosaic/app/.venv/bin/pip install --upgrade pip --quiet
 sudo -u mosaic /home/mosaic/app/.venv/bin/pip install \
     torch==2.4.1+cpu \
-    --index-url https://download.pytorch.org/whl/cpu --quiet
+    --index-url https://download.pytorch.org/whl/cpu --no-cache-dir --quiet
 sudo -u mosaic /home/mosaic/app/.venv/bin/pip install \
-    -r /home/mosaic/app/requirements.txt --quiet
+    -r /home/mosaic/app/requirements.txt --no-cache-dir --quiet
 
 echo "=== Python dependencies installed ==="
 

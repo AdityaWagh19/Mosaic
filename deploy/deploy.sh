@@ -27,17 +27,8 @@ echo "--- Updating Python dependencies ---"
 $VENV/bin/pip install \
     torch==2.4.1+cpu \
     --index-url https://download.pytorch.org/whl/cpu \
-    --quiet --exists-action i
-$VENV/bin/pip install -r requirements.txt --quiet --exists-action i
-
-# ---------------------------------------------------------------------------
-# 3. Frontend — npm install reuses node_modules, only updates what changed
-# ---------------------------------------------------------------------------
-echo "--- Rebuilding frontend ---"
-cd "$APP/frontend"
-npm install --silent
-VITE_API_BASE_URL=/api npm run build
-cd "$APP"
+    --no-cache-dir --quiet --exists-action i
+$VENV/bin/pip install -r requirements.txt --no-cache-dir --quiet --exists-action i
 
 # ---------------------------------------------------------------------------
 # 4. Restart API service (passwordless via sudoers)
