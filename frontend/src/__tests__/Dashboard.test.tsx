@@ -76,6 +76,16 @@ describe('Dashboard — empty state', () => {
     await renderDashboard();
     expect(screen.getByText(/start with a question/i)).toBeInTheDocument();
   });
+
+  it('runs a selected preset with its own configuration', async () => {
+    const run = vi.fn();
+    contextValue = makeContext({ run });
+    await renderDashboard();
+
+    fireEvent.click(screen.getByRole('button', { name: /hub influence/i }));
+
+    expect(run).toHaveBeenCalledWith(expect.objectContaining({ topology: 'ba', m_ba: 3, gamma: 1.5 }));
+  });
 });
 
 describe('Dashboard — loading state', () => {

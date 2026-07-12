@@ -65,6 +65,8 @@ let ControlPanel: React.ComponentType;
 
 beforeEach(async () => {
   mockIsRunning = false;
+  mockRun.mockClear();
+  mockSetConfig.mockClear();
   const mod = await import('../components/simulation/ControlPanel');
   ControlPanel = (mod as { ControlPanel: React.ComponentType }).ControlPanel;
 });
@@ -90,6 +92,13 @@ describe('ControlPanel', () => {
     if (runBtns.length > 0) {
       fireEvent.click(runBtns[0]);
     }
+  });
+
+  it('runs a selected preset with its own configuration', async () => {
+    renderPanel();
+    fireEvent.click(screen.getByLabelText(/hub influence/i));
+
+    expect(mockRun).toHaveBeenCalledWith(expect.objectContaining({ topology: 'ba', m_ba: 3, gamma: 1.5 }));
   });
 });
 

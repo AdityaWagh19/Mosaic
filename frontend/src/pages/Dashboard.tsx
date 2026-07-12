@@ -56,7 +56,11 @@ function EmptyState() {
               <button 
                 key={preset.name} 
                 className="preset-card" 
-                onClick={() => { setConfig({...config, ...preset.config} as SimConfig); setTimeout(() => run(), 50); }}
+                onClick={() => {
+                  const presetConfig = { ...config, ...preset.config } as SimConfig;
+                  setConfig(presetConfig);
+                  void run(presetConfig);
+                }}
               >
                 <div className="preset-icon"><Icon size={20} /></div>
                 <h3>{preset.name}</h3>
