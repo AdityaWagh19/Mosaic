@@ -21,12 +21,16 @@ export function GuidePage({ nav }: { nav?: React.ReactNode }) {
       </section>
       <section className="method-guide">
         {sections.map(({ title, copy, Ill }, index) => (
-          <article key={title} className="guide-section" style={{ border: '1px solid var(--color-hairline)', padding: 24, borderRadius: 'var(--radius-cards)', marginBottom: 24, background: 'var(--color-paper)' }}>
-            <Ill />
-            <h2 style={{ fontSize: 20, marginTop: 16, marginBottom: 8 }}>{title}</h2>
-            <p style={{ margin: 0, color: 'var(--color-graphite)', fontSize: 15 }}>{copy}</p>
-            {index === 1 && <div style={{ marginTop: 16 }}><Link className="btn btn-secondary" to="/simulate">Try the small-world baseline →</Link></div>}
-            {index === 2 && <div style={{ marginTop: 16 }}><Link className="btn btn-secondary" to="/simulate">Try two-community contact →</Link></div>}
+          <article key={title} className="guide-section">
+            <div className="guide-ill-wrapper">
+              <Ill />
+            </div>
+            <div className="guide-content">
+              <h2>{title}</h2>
+              <p>{copy}</p>
+              {index === 1 && <div><Link className="btn btn-secondary" to="/simulate">Try the small-world baseline →</Link></div>}
+              {index === 2 && <div><Link className="btn btn-secondary" to="/simulate">Try two-community contact →</Link></div>}
+            </div>
           </article>
         ))}
       </section>

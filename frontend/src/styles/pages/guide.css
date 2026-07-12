@@ -1,5 +1,5 @@
 .method-guide {
-  max-width: 760px;
+  max-width: 860px;
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -7,29 +7,45 @@
 }
 
 .guide-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: center;
   padding-bottom: 32px;
   border-bottom: 1px solid var(--color-hairline);
+}
+
+@media (max-width: 768px) {
+  .guide-section {
+    grid-template-columns: 1fr;
+  }
 }
 
 .guide-section:last-child {
   border-bottom: none;
 }
 
-.guide-section h2 {
+.guide-ill-wrapper img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-cards);
+}
+
+.guide-content h2 {
   margin: 0 0 12px;
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 600;
   letter-spacing: -0.015em;
 }
 
-.guide-section p {
+.guide-content p {
   max-width: 640px;
   margin: 0 0 16px;
   color: var(--color-graphite);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.5;
 }
 
-.guide-section .btn {
+.guide-content .btn {
   display: inline-flex;
 }
