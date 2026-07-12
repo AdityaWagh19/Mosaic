@@ -44,17 +44,17 @@ export function LandingPage({ nav }: { nav: React.ReactNode }) {
         <BlurReveal as="h2">Questions you can explore</BlurReveal>
         <div className="grid">
           <StaggerFade>
-            <SpotlightCard className="feature-card">
+            <SpotlightCard className="feature-card card-blue">
               <GitBranch size={20} className="feature-icon" />
               <h3>Does topology matter?</h3>
               <p>Compare random, small-world, scale-free, and two-community networks.</p>
             </SpotlightCard>
-            <SpotlightCard className="feature-card">
+            <SpotlightCard className="feature-card card-amber">
               <Star size={20} className="feature-icon" />
               <h3>Do hubs shape the outcome?</h3>
               <p>Increase prestige influence to test whether central speakers pull others toward them.</p>
             </SpotlightCard>
-            <SpotlightCard className="feature-card">
+            <SpotlightCard className="feature-card card-crimson">
               <Users size={20} className="feature-icon" />
               <h3>When do communities merge?</h3>
               <p>Change bridge density to see when separated groups begin to share an accent pattern.</p>

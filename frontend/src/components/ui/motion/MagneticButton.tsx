@@ -1,16 +1,16 @@
 import React, { useRef, useState, type ReactNode } from 'react';
 import { motion, useReducedMotion, type HTMLMotionProps } from 'motion/react';
 
-interface MagneticButtonProps extends Omit<HTMLMotionProps<"button">, "ref"> {
+interface MagneticButtonProps extends Omit<HTMLMotionProps<"div">, "ref"> {
   children: ReactNode;
 }
 
 export function MagneticButton({ children, className, ...props }: MagneticButtonProps) {
-  const ref = useRef<HTMLButtonElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const reduced = useReducedMotion();
 
-  const handleMouse = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleMouse = (e: React.MouseEvent<HTMLDivElement>) => {
     if (reduced) return;
     const { clientX, clientY } = e;
     const { height, width, left, top } = ref.current!.getBoundingClientRect();
@@ -24,7 +24,7 @@ export function MagneticButton({ children, className, ...props }: MagneticButton
   };
 
   return (
-    <motion.button
+    <motion.div
       ref={ref}
       onMouseMove={handleMouse}
       onMouseLeave={reset}
@@ -35,6 +35,6 @@ export function MagneticButton({ children, className, ...props }: MagneticButton
       style={{ display: 'inline-block' }}
     >
       {children}
-    </motion.button>
+    </motion.div>
   );
 }
