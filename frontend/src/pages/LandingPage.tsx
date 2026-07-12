@@ -10,7 +10,7 @@ export function LandingPage({ nav }: { nav: React.ReactNode }) {
   return (
     <main className="shell">
       {nav}
-      <section className="hero landing-hero" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 64, alignItems: 'center' }}>
+      <section className="hero landing-hero">
         <div>
           <p className="eyebrow">AGENT-BASED SOCIOLINGUISTICS</p>
           <BlurReveal as="h1">See how social structure shapes accent change.</BlurReveal>

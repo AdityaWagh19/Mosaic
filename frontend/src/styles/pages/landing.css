@@ -1,5 +1,14 @@
 .landing-hero {
   padding-bottom: 64px;
+  display: grid;
+  gap: 64px;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .landing-hero {
+    grid-template-columns: 1fr minmax(300px, 400px);
+  }
 }
 
 .credibility {
