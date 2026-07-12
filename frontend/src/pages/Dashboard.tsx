@@ -59,7 +59,6 @@ function EmptyState() {
                 onClick={() => {
                   const presetConfig = { ...config, ...preset.config } as SimConfig;
                   setConfig(presetConfig);
-                  void run(presetConfig);
                 }}
               >
                 <div className="preset-icon"><Icon size={20} /></div>

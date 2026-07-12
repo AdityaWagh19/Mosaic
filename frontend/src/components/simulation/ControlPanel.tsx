@@ -95,7 +95,7 @@ function ConfigForm({
       <p className="control-group-label">Question</p>
       <fieldset className="preset-options"><legend>Start from a preset</legend>{Object.values(PRESETS).map(preset => {
         const id = `preset-${preset.name.replace(/\s+/g, '-').toLowerCase()}`;
-        return <div key={preset.name} className={activePreset === preset.name ? 'is-selected' : ''}><input type="radio" id={id} name="preset" value={preset.name} checked={activePreset === preset.name} onChange={() => { const presetConfig = { ...config, ...preset.config } as SimConfig; setActivePreset(preset.name); setConfig(presetConfig); void run(presetConfig); }} /><label htmlFor={id}><span><strong>{preset.name}</strong><small>{preset.desc}</small></span></label></div>
+        return <div key={preset.name} className={activePreset === preset.name ? 'is-selected' : ''}><input type="radio" id={id} name="preset" value={preset.name} checked={activePreset === preset.name} onChange={() => { const presetConfig = { ...config, ...preset.config } as SimConfig; setActivePreset(preset.name); setConfig(presetConfig); }} /><label htmlFor={id}><span><strong>{preset.name}</strong><small>{preset.desc}</small></span></label></div>
       })}</fieldset>
 
       <div className="field">
