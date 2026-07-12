@@ -1,0 +1,1 @@
+import{u as o,j as s,a9 as a}from"./index-DxeHlm3P.js";function u({className:e="",style:i,...t}){const n=o();return s.jsx(a.hr,{className:e,initial:{scaleX:n?1:0},whileInView:{scaleX:1},viewport:{once:!0,margin:"-20px"},transition:{duration:.4,ease:"easeOut"},style:{originX:0,...i},...t})}export{u as L};
