@@ -22,8 +22,8 @@ function Nav() {
   return (
     <nav className="nav" aria-label="Main navigation">
       <Link className="brand" to="/" aria-label="Mosaic home">
-        <img src="/brand/mosaic-logo.png" alt="" width={22} height={22} className="brand-mark" />
-        <span className="brand-wordmark">Mosaic</span>
+        <img src="/brand/mosaic-logo.png" alt="" width={22} height={22} style={{ display: 'block' }} />
+        <span>Mosaic</span>
       </Link>
       <div className="nav-links">
         <NavLink to="/simulate">Simulator</NavLink>

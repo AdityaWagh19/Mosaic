@@ -5,8 +5,8 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer-content">
         <div className="footer-brand">
-          <img src="/brand/mosaic-logo.png" alt="" width={18} height={18} className="footer-mark" />
-          <span className="footer-wordmark">Mosaic</span>
+          <img src="/brand/mosaic-logo.png" alt="" width={18} height={18} style={{ display: 'block' }} />
+          <span>Mosaic</span>
         </div>
         <div className="footer-links">
           <Link to="/simulate">Simulator</Link>
