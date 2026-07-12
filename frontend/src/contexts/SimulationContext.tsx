@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { fetchResult, fetchUmap, runSimulation } from '../api/client';
 import type { RunResponse, SimConfig, UmapResponse } from '../types/models';
 
@@ -14,13 +14,18 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
   const [umap, setUmap] = useState<UmapResponse | null>(null); const [isRunning, setRunning] = useState(false); const [error, setError] = useState<string | null>(null);
   const hydrateUmap = (id: string) => fetchUmap(id).then(setUmap).catch(() => setUmap(null));
   useEffect(() => { localStorage.setItem('mosaic:draft-config', JSON.stringify(config)); }, [config]);
-  const run = async (configOverride?: SimConfig) => {
+  
+  const clear = useCallback(() => { setResult(null); setUmap(null); setError(null); }, []);
+  
+  const run = useCallback(async (configOverride?: SimConfig) => {
     const configToRun = configOverride ?? config;
     setRunning(true); setError(null); setResult(null); setUmap(null);
     try { const next = await runSimulation(configToRun); setResult(next); setConfig(next.config); void hydrateUmap(next.run_id); return next; } catch (cause) { setError(cause instanceof Error ? cause.message : 'Simulation failed.'); return null; } finally { setRunning(false); }
-  };
-  const load = async (id: string) => { setRunning(true); setError(null); setResult(null); setUmap(null); try { const next = await fetchResult(id); setResult(next); setConfig(next.config); void hydrateUmap(id); } catch (cause) { setError(cause instanceof Error ? cause.message : 'Run could not be loaded.'); } finally { setRunning(false); } };
-  return <Context.Provider value={{ config, setConfig, result, umap, isRunning, error, run, load, clear: () => { setResult(null); setUmap(null); setError(null); } }}>{children}</Context.Provider>;
+  }, [config]);
+  
+  const load = useCallback(async (id: string) => { setRunning(true); setError(null); setResult(null); setUmap(null); try { const next = await fetchResult(id); setResult(next); setConfig(next.config); void hydrateUmap(id); } catch (cause) { setError(cause instanceof Error ? cause.message : 'Run could not be loaded.'); } finally { setRunning(false); } }, []);
+  
+  return <Context.Provider value={{ config, setConfig, result, umap, isRunning, error, run, load, clear }}>{children}</Context.Provider>;
 }
 // eslint-disable-next-line react-refresh/only-export-components
 export function useSimulation() { const value = useContext(Context); if (!value) throw new Error('useSimulation must be used inside SimulationProvider.'); return value; }
