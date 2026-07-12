@@ -30,6 +30,10 @@ $VENV/bin/pip install -r requirements.txt --no-cache-dir --quiet --exists-action
 # ---------------------------------------------------------------------------
 # 4. Restart API service (passwordless via sudoers)
 # ---------------------------------------------------------------------------
+echo "--- Updating API service configuration ---"
+sudo cp deploy/mosaic-api.service /etc/systemd/system/
+sudo /bin/systemctl daemon-reload
+
 echo "--- Restarting API service ---"
 sudo /bin/systemctl restart mosaic-api
 
