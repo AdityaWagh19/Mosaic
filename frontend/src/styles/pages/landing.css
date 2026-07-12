@@ -36,30 +36,13 @@
 
 .feature-card {
   padding: 32px;
-  border-radius: var(--radius-cards);
-  border: 1px solid var(--color-hairline);
-  background: var(--surface-subtle);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .feature-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-subtle);
-}
-
-.feature-card.card-blue {
-  background: rgba(0, 119, 255, 0.04);
-  border-color: rgba(0, 119, 255, 0.1);
-}
-
-.feature-card.card-amber {
-  background: rgba(245, 158, 11, 0.04);
-  border-color: rgba(245, 158, 11, 0.1);
-}
-
-.feature-card.card-crimson {
-  background: rgba(239, 68, 68, 0.04);
-  border-color: rgba(239, 68, 68, 0.1);
+  background: rgba(0, 119, 255, 0.05);
 }
 
 .citation-pills {
