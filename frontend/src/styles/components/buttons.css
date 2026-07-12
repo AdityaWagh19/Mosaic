@@ -38,6 +38,13 @@
   border: 1px solid var(--color-hairline);
 }
 
+.btn-secondary:hover,
+.btn-secondary:focus-visible {
+  background: var(--surface-subtle);
+  color: var(--color-ink);
+  border-color: var(--color-graphite);
+}
+
 .btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;

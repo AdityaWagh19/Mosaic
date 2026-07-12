@@ -8,6 +8,14 @@
   text-decoration: none;
 }
 
+.brand img {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.brand:hover img {
+  transform: rotate(-10deg) scale(1.1);
+}
+
 .loading-state {
   text-align: left;
 }
@@ -69,7 +77,9 @@
   margin: 0 0 12px;
   color: var(--color-ash);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .hero h1 {
@@ -95,14 +105,29 @@
 }
 
 .section {
-  margin-top: var(--spacing-128);
+  margin-top: 96px;
 }
 
 .section h2 {
   margin: 0 0 24px;
-  font-size: 24px;
+  font-size: 28px;
+  font-weight: 600;
   line-height: 1.25;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.04em;
+}
+
+.section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
 }
 
 .grid {

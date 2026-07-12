@@ -12,7 +12,7 @@
   font-weight: 600;
 }
 
-.preset-options label {
+.preset-options div {
   display: flex;
   gap: 8px;
   padding: 8px;
@@ -21,7 +21,7 @@
   cursor: pointer;
 }
 
-.preset-options label.is-selected {
+.preset-options div.is-selected {
   border-color: var(--color-ink);
 }
 

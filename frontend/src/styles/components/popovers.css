@@ -1,6 +1,8 @@
 .research-menu-trigger,
 .mobile-menu-trigger {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 6px 8px;
   color: var(--color-graphite);
   font-size: 12px;

@@ -2,9 +2,8 @@ import { lazy, Suspense } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { BrowserRouter, Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import * as Popover from '@radix-ui/react-popover';
-import { Menu, Play } from 'lucide-react';
+import { Menu, Play, ChevronDown } from 'lucide-react';
 import { SimulationProvider } from './contexts/SimulationContext';
-import { DarkModeDetector } from './components/ui/DarkModeDetector';
 import { GuidePage } from './pages/GuidePage';
 import { ApiStatus } from './components/ui/ApiStatus';
 import { SiteFooter } from './components/ui/SiteFooter';
@@ -30,7 +29,7 @@ function Nav() {
         
         <Popover.Root>
           <Popover.Trigger className="research-menu-trigger">
-            Research
+            Research <ChevronDown size={14} className="nav-chevron" />
           </Popover.Trigger>
           <Popover.Portal>
             <Popover.Content className="research-popover" align="center" sideOffset={8}>
@@ -91,7 +90,6 @@ export default function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <SimulationProvider>
-          <DarkModeDetector />
           <AppRoutes />
         </SimulationProvider>
       </BrowserRouter>

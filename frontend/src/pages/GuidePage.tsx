@@ -22,6 +22,10 @@ export function GuidePage({ nav }: { nav?: React.ReactNode }) {
       <section className="method-guide">
         {sections.map(({ title, copy, Ill }, index) => (
           <article key={title} className="guide-section">
+            <div className="guide-timeline">
+              <span className="guide-number">0{index + 1}</span>
+              {index < sections.length - 1 && <div className="guide-line" />}
+            </div>
             <div className="guide-ill-wrapper">
               <Ill />
             </div>

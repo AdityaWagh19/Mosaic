@@ -65,11 +65,14 @@
 }
 
 .hero-illustration {
-  display: none;
+  display: block;
+  margin-top: 32px;
+  width: 100%;
+  max-width: 500px;
 }
 
 @media (min-width: 1024px) {
   .hero-illustration {
-    display: block;
+    margin-top: 0;
   }
 }

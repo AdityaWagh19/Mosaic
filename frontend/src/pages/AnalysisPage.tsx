@@ -55,9 +55,11 @@ export function AnalysisPage({ nav }: { nav: React.ReactNode }) {
           {/* ── Benchmark summary cards ─────────────────────────────── */}
           <LineReveal className="section-divider" />
           <section aria-labelledby="benchmark-heading" style={{ marginBottom: 48 }}>
-            <BlurReveal as="h2" id="benchmark-heading" style={{ fontSize: 20, marginBottom: 16 }}>
-              Model benchmarks
-            </BlurReveal>
+            <div className="section-header">
+              <BlurReveal as="h2" id="benchmark-heading">
+                Model benchmarks
+              </BlurReveal>
+            </div>
             <div className="metrics" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
               <MetricCard label="MLP accuracy" value={`${(data.mlp.accuracy * 100).toFixed(2)}%`} sub={`Macro-F1: ${(data.mlp.macro_f1 * 100).toFixed(2)}%`} highlight />
               <MetricCard label="GCN accuracy" value={`${(data.gcn.accuracy * 100).toFixed(2)}%`} sub={`Macro-F1: ${(data.gcn.macro_f1 * 100).toFixed(2)}%`} />
@@ -70,15 +72,17 @@ export function AnalysisPage({ nav }: { nav: React.ReactNode }) {
 
           {/* ── Benchmark table ─────────────────────────────────────── */}
           <section aria-labelledby="table-heading" style={{ marginBottom: 48 }}>
-            <h2 id="table-heading" style={{ fontSize: 20, marginBottom: 16 }}>
-              Detailed comparison table
-            </h2>
-            <div style={{ overflowX: 'auto' }}>
+            <div className="section-header">
+              <h2 id="table-heading">
+                Detailed comparison table
+              </h2>
+            </div>
+            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid var(--color-hairline)' }}>
                     {['Model', 'Accuracy', 'Macro-F1', 'vs Random chance', 'Notes'].map(h => (
-                      <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--color-ash)' }}>{h}</th>
+                      <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--color-ash)', whiteSpace: 'nowrap' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -120,9 +124,11 @@ export function AnalysisPage({ nav }: { nav: React.ReactNode }) {
 
           {/* ── Clustering diagnostics ──────────────────────────────── */}
           <section aria-labelledby="clustering-heading" style={{ marginBottom: 48 }}>
-            <h2 id="clustering-heading" style={{ fontSize: 20, marginBottom: 8 }}>
-              Clustering diagnostics
-            </h2>
+            <div className="section-header">
+              <h2 id="clustering-heading">
+                Clustering diagnostics
+              </h2>
+            </div>
             <p className="lede" style={{ margin: '0 0 24px' }}>
               Cluster quality was assessed using two methods after the simulation.
             </p>
@@ -183,7 +189,9 @@ export function AnalysisPage({ nav }: { nav: React.ReactNode }) {
           <LineReveal className="section-divider" />
           {data.figures.length > 0 && (
             <section aria-labelledby="figures-heading" style={{ marginBottom: 48 }}>
-              <BlurReveal as="h2" id="figures-heading" style={{ fontSize: 20, marginBottom: 16 }}>Generated figures</BlurReveal>
+              <div className="section-header">
+                <BlurReveal as="h2" id="figures-heading">Generated figures</BlurReveal>
+              </div>
               <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
                 {data.figures.map(name => (
                   <figure key={name} style={{ margin: 0 }}>
