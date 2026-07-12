@@ -41,7 +41,7 @@ export function Dashboard({ nav }: { nav: React.ReactNode }) {
 }
 function Metric({ label, value, number, help }: { label: string; value: string; number?: number; help: string }) { const output = label === 'Convergence time' ? (n: number) => `${Math.round(n)} steps` : label === 'Final diversity' ? (n: number) => `H = ${n.toFixed(3)}` : (n: number) => `D = ${n.toFixed(3)}`; return <div className="metric"><span>{label} <InfoTooltip label={help} /></span><strong>{number === undefined ? value : <AnimatedNumber value={number} format={output} />}</strong></div>; }
 function EmptyState() { 
-  const { config, setConfig, run } = useSimulation();
+  const { config, setConfig } = useSimulation();
   
   return (
     <div className="empty empty-start">
