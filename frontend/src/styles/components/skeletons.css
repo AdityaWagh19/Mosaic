@@ -1,0 +1,39 @@
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-cards);
+  background: #fafafa;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.75),
+    transparent
+  );
+  animation: shimmer 1.2s infinite;
+}
+
+.skeleton-line {
+  height: 14px;
+  margin: 12px;
+  border-radius: 4px;
+  background: #eee;
+}
+
+.skeleton-line.wide {
+  width: 70%;
+}
+
+.skeleton-chart {
+  height: 260px;
+  margin: 12px;
+  border-radius: 8px;
+  background: #eee;
+}

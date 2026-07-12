@@ -43,7 +43,7 @@ describe('ComparePage', () => {
   it('shows at-least-two notice with no runs selected', async () => {
     await renderCompare();
     await waitFor(() =>
-      expect(screen.getByText(/choose at least two/i)).toBeInTheDocument()
+      expect(screen.getByText(/select two to four runs/i)).toBeInTheDocument()
     );
   });
 

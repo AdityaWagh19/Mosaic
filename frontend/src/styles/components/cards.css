@@ -1,0 +1,53 @@
+.panel-title {
+  margin: 0 0 6px;
+  font-size: 20px;
+  letter-spacing: -0.035em;
+}
+
+.panel-description {
+  max-width: 660px;
+  margin: 0 0 24px;
+  color: var(--color-graphite);
+  font-size: 14px;
+}
+
+.panel details {
+  margin-top: 16px;
+}
+
+.panel details summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.panel,
+.card,
+.result-statement {
+  animation: reveal 0.2s ease-out both;
+}
+
+.card {
+  padding: 16px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-cards);
+  background: #fff;
+}
+
+.card h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.card p {
+  margin: 0;
+  color: var(--color-graphite);
+  font-size: 14px;
+}
+
+.panel {
+  padding: 16px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-cards);
+  background: #fff;
+}

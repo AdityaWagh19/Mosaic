@@ -1,0 +1,30 @@
+.method-guide {
+  max-width: 760px;
+  display: grid;
+  gap: 8px;
+}
+
+.method-guide details {
+  padding: 16px;
+  border: 1px solid var(--color-hairline);
+  border-radius: 12px;
+}
+
+.method-guide summary {
+  margin: 0;
+  font-size: 15px;
+}
+
+.method-guide p {
+  max-width: 640px;
+  margin: 10px 0;
+  color: var(--color-graphite);
+  font-size: 14px;
+}
+
+.method-guide a {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-signal-blue);
+  text-decoration: none;
+}
