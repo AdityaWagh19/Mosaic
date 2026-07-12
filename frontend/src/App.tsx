@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { BrowserRouter, Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import * as Popover from '@radix-ui/react-popover';
 import { Menu, Play, ChevronDown } from 'lucide-react';
-import { SimulationProvider } from './contexts/SimulationContext';
+import { SimulationProvider, useSimulation } from './contexts/SimulationContext';
 import { GuidePage } from './pages/GuidePage';
 import { ApiStatus } from './components/ui/ApiStatus';
 import { SiteFooter } from './components/ui/SiteFooter';
@@ -18,6 +18,9 @@ const ComparePage = lazy(() => import('./pages/ComparePage').then(module => ({ d
 const AnalysisPage = lazy(() => import('./pages/AnalysisPage').then(module => ({ default: module.AnalysisPage })));
 
 function Nav() {
+  const { run } = useSimulation();
+  const location = useLocation();
+
   return (
     <nav className="nav" aria-label="Main navigation">
       <Link className="brand" to="/" aria-label="Mosaic home">
@@ -25,6 +28,7 @@ function Nav() {
         <span>Mosaic</span>
       </Link>
       <div className="nav-links">
+        <NavLink to="/">Home</NavLink>
         <NavLink to="/simulate">Simulator</NavLink>
         
         <Popover.Root>
@@ -50,6 +54,7 @@ function Nav() {
           </Popover.Trigger>
           <Popover.Portal>
             <Popover.Content className="mobile-popover" align="end" sideOffset={8}>
+              <NavLink to="/">Home</NavLink>
               <NavLink to="/simulate">Simulator</NavLink>
               <NavLink to="/experiments">Experiments</NavLink>
               <NavLink to="/compare">Compare runs</NavLink>
@@ -61,7 +66,12 @@ function Nav() {
       </div>
 
       <MagneticButton>
-        <Link className="btn btn-primary nav-cta" to="/simulate">
+        <Link className="btn btn-primary nav-cta" to="/simulate" onClick={(e) => {
+          if (location.pathname === '/simulate') {
+            e.preventDefault();
+            void run();
+          }
+        }}>
           <Play size={16} aria-hidden="true" className="btn-icon" /> Run a simulation
         </Link>
       </MagneticButton>
