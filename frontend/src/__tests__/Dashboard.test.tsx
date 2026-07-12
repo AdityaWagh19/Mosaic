@@ -77,14 +77,14 @@ describe('Dashboard — empty state', () => {
     expect(screen.getByText(/start with a question/i)).toBeInTheDocument();
   });
 
-  it('runs a selected preset with its own configuration', async () => {
-    const run = vi.fn();
-    contextValue = makeContext({ run });
+  it('sets a selected preset configuration', async () => {
+    const setConfig = vi.fn();
+    contextValue = makeContext({ setConfig });
     await renderDashboard();
 
     fireEvent.click(screen.getByRole('button', { name: /hub influence/i }));
 
-    expect(run).toHaveBeenCalledWith(expect.objectContaining({ topology: 'ba', m_ba: 3, gamma: 1.5 }));
+    expect(setConfig).toHaveBeenCalledWith(expect.objectContaining({ topology: 'ba', m_ba: 3, gamma: 1.5 }));
   });
 });
 

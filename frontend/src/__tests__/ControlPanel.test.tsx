@@ -94,11 +94,11 @@ describe('ControlPanel', () => {
     }
   });
 
-  it('runs a selected preset with its own configuration', async () => {
+  it('sets a selected preset configuration', async () => {
     renderPanel();
     fireEvent.click(screen.getByLabelText(/hub influence/i));
 
-    expect(mockRun).toHaveBeenCalledWith(expect.objectContaining({ topology: 'ba', m_ba: 3, gamma: 1.5 }));
+    expect(mockSetConfig).toHaveBeenCalledWith(expect.objectContaining({ topology: 'ba', m_ba: 3, gamma: 1.5 }));
   });
 });
 
