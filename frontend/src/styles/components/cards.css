@@ -51,3 +51,55 @@
   border-radius: var(--radius-cards);
   background: #fff;
 }
+
+.preset-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 32px;
+  width: 100%;
+}
+
+.preset-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-cards);
+  background: #fff;
+  text-align: left;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+  cursor: pointer;
+}
+
+.preset-card:hover {
+  border-color: #000;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-subtle);
+}
+
+.preset-card .preset-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--surface-subtle);
+  color: var(--color-ink);
+  margin-bottom: 12px;
+}
+
+.preset-card h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.preset-card p {
+  margin: 0;
+  color: var(--color-graphite);
+  font-size: 13px;
+  line-height: 1.4;
+}

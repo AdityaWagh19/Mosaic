@@ -3,12 +3,7 @@ import { fetchConfigSchema, fetchTopologies } from '../../api/client';
 import { useSimulation } from '../../contexts/SimulationContext';
 import type { ConfigSchema, SimConfig, TopologyInfo } from '../../types/models';
 
-const presets: Record<string, Partial<SimConfig>> = {
-  'Small-world baseline': { topology: 'watts_strogatz', N: 200, T: 10000, k_ws: 6, p_rewire: 0.1, gamma: 1, theta: 0.3, sigma: 0.01, seed: 42 },
-  'Hub influence': { topology: 'ba', m_ba: 3, gamma: 1.5 },
-  'Two-community contact': { topology: 'sbm', p_in: 0.15, p_out: 0.02 },
-  'Quiet convergence': { topology: 'watts_strogatz', N: 200, T: 10000, k_ws: 6, p_rewire: 0.1, gamma: 1, theta: 0.3, sigma: 0, seed: 42 },
-};
+import { PRESETS } from '../../constants/presets';
 
 const fallback: ConfigSchema = {
   version: 0,
@@ -98,7 +93,7 @@ function ConfigForm({
 
       <div className="control-group">
       <p className="control-group-label">Question</p>
-      <fieldset className="preset-options"><legend>Start from a preset</legend>{Object.keys(presets).map(key => <label key={key} className={activePreset === key ? 'is-selected' : ''}><input type="radio" name="preset" value={key} checked={activePreset === key} onChange={() => { setActivePreset(key); setConfig({ ...config, ...presets[key] }); }} /><span><strong>{key}</strong><small>{key === 'Hub influence' ? 'Highly connected speakers can shape the final pattern.' : key === 'Two-community contact' ? 'Bridge ties determine whether communities merge.' : key === 'Quiet convergence' ? 'Isolate social accommodation without random drift.' : 'Local clusters with occasional shortcuts.'}</small></span></label>)}</fieldset>
+      <fieldset className="preset-options"><legend>Start from a preset</legend>{Object.values(PRESETS).map(preset => <label key={preset.name} className={activePreset === preset.name ? 'is-selected' : ''}><input type="radio" name="preset" value={preset.name} checked={activePreset === preset.name} onChange={() => { setActivePreset(preset.name); setConfig({ ...config, ...preset.config } as SimConfig); }} /><span><strong>{preset.name}</strong><small>{preset.desc}</small></span></label>)}</fieldset>
 
       <div className="field">
         <label htmlFor="topology">Network topology</label>

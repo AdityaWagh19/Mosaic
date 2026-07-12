@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { GitCompare } from 'lucide-react';
 import { fetchResult, fetchRuns } from '../api/client';
 import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
+import { BlurReveal } from '../components/ui/motion/BlurReveal';
+import { LineReveal } from '../components/ui/motion/LineReveal';
+import { IllustrationCompare } from '../components/ui/IllustrationCompare';
 import type { RunResponse, RunSummary } from '../types/models';
 
 const colors = ['#0077ff', '#000000', '#f97316', '#2563eb']; 
@@ -65,7 +67,7 @@ export function ComparePage({ nav }: { nav: React.ReactNode }) {
       {nav}
       <header className="hero compact-hero">
         <p className="eyebrow">RUN COMPARISON</p>
-        <h1>Compare completed runs.</h1>
+        <BlurReveal as="h1">Compare completed runs.</BlurReveal>
         <p className="lede">Choose two to four runs. Mosaic identifies whether the configurations isolate one changed assumption or mix several changes.</p>
       </header>
       
@@ -103,10 +105,11 @@ export function ComparePage({ nav }: { nav: React.ReactNode }) {
             </div>
           </section>
 
+          <LineReveal className="section-divider" style={{ marginTop: 0 }} />
           <section className="section">
             <div className="section-head">
               <div>
-                <h2>Comparison evidence</h2>
+                <BlurReveal as="h2">Comparison evidence</BlurReveal>
                 <p className="lede">Read configuration differences before interpreting outcome differences.</p>
               </div>
               {results.length >= 2 && (
@@ -125,7 +128,7 @@ export function ComparePage({ nav }: { nav: React.ReactNode }) {
 
             {results.length < 2 ? (
               <div className="empty-state compare-empty">
-                <GitCompare size={48} className="empty-icon" />
+                <IllustrationCompare />
                 <p>Select two to four runs from the archive to compare their configurations and outcomes.</p>
               </div>
             ) : (

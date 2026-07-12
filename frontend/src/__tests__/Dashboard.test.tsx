@@ -98,7 +98,7 @@ describe('Dashboard — completed result', () => {
   it('renders metrics and tab list', async () => {
     contextValue = makeContext({ result: mockResult });
     await renderDashboard();
-    expect(screen.getByText(/run complete/i)).toBeInTheDocument();
+    expect(screen.getByText(/Diversity stabilized/i)).toBeInTheDocument();
     expect(screen.getAllByText(/converged/i).length).toBeGreaterThan(0);
     // Four tabs
     expect(screen.getByRole('tab', { name: /overview/i })).toBeInTheDocument();

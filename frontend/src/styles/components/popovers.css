@@ -39,8 +39,8 @@
 .research-popover a,
 .mobile-popover a {
   display: grid;
-  padding: 9px 10px;
-  border-radius: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-buttons);
   color: var(--color-ink);
   font-size: 13px;
   text-decoration: none;

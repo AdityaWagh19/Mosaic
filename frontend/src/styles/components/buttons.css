@@ -22,6 +22,10 @@
   text-decoration: none;
 }
 
+.btn-icon {
+  margin-right: 6px;
+}
+
 .btn-primary {
   background: var(--color-signal-blue);
   color: #fff;

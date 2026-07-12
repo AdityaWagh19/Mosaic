@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { fetchExperiments, figureUrl } from '../api/client';
 import type { Experiment } from '../types/models';
 import { LoadingSkeleton } from '../components/ui/LoadingSkeleton';
+import { BlurReveal } from '../components/ui/motion/BlurReveal';
+import { LineReveal } from '../components/ui/motion/LineReveal';
 
 const FINDINGS: Record<string, {
   figures: Record<string, { finding: string; howToRead: string }>;
@@ -102,7 +104,7 @@ export function ExperimentsPage({ nav }: { nav: React.ReactNode }) {
       {nav}
       <header className="hero" style={{ paddingBottom: 32 }}>
         <p className="eyebrow">RESEARCH ARCHIVE</p>
-        <h1>Experiments, made inspectable.</h1>
+        <BlurReveal as="h1">Experiments, made inspectable.</BlurReveal>
         <p className="lede">
           These are completed offline experiments. Their findings are served by the API so the
           web interface never reads local project files directly. Each figure includes a short
@@ -147,11 +149,12 @@ export function ExperimentsPage({ nav }: { nav: React.ReactNode }) {
                 style={{ marginBottom: 32 }}
                 aria-labelledby={`exp-${item.id}-heading`}
               >
+                <LineReveal className="section-divider" style={{ marginTop: 0 }} />
                 <header style={{ marginBottom: 24 }}>
                   <p className="eyebrow">{EXPERIMENT_LABELS[item.id] ?? item.id.toUpperCase()}</p>
-                  <h2 id={`exp-${item.id}-heading`} style={{ fontSize: 24, margin: '4px 0 8px' }}>
+                  <BlurReveal as="h2" id={`exp-${item.id}-heading`} style={{ fontSize: 24, margin: '4px 0 8px' }}>
                     {item.title}
-                  </h2>
+                  </BlurReveal>
                   <p className="lede" style={{ margin: 0 }}>{item.summary}</p>
                   <div className="experiment-brief"><span><strong>Research question</strong>{item.id === 'topology' ? 'How does network structure change convergence?' : item.id === 'prestige' ? 'How does centrality affect influence?' : item.id === 'contact' ? 'When do communities become accent-similar?' : 'Do the model mechanisms behave as expected?'}</span><span><strong>Evidence</strong>Multiple seeds and publication-ready figures</span></div>
                 </header>

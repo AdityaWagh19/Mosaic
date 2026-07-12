@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { fetchTopologies } from '../../api/client';
 
+import { AlertTriangle } from 'lucide-react';
+
 export function ApiStatus() {
   const [failed, setFailed] = useState(false);
 
@@ -11,9 +13,12 @@ export function ApiStatus() {
   if (!failed) return null;
 
   return (
-    <div className="notice error api-status" role="alert" style={{ margin: '16px', borderTop: '3px solid var(--color-ember)' }}>
-      <strong>API unreachable</strong>
-      <p>The backend simulation server could not be reached. Ensure the server is running on port 8000 and the VITE_API_BASE_URL environment variable is correct.</p>
+    <div className="api-status-banner" role="alert">
+      <AlertTriangle size={18} className="api-status-icon" />
+      <div>
+        <strong>API connection unavailable</strong>
+        <span>Mosaic requires the backend simulation server to run locally. Ensure the server is running on port 8000.</span>
+      </div>
     </div>
   );
 }

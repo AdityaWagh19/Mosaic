@@ -4,8 +4,13 @@ import { BrowserRouter, Link, NavLink, Route, Routes, useLocation } from 'react-
 import * as Popover from '@radix-ui/react-popover';
 import { Menu, Play } from 'lucide-react';
 import { SimulationProvider } from './contexts/SimulationContext';
+import { DarkModeDetector } from './components/ui/DarkModeDetector';
 import { GuidePage } from './pages/GuidePage';
 import { ApiStatus } from './components/ui/ApiStatus';
+import { SiteFooter } from './components/ui/SiteFooter';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import { ScrollProgress } from './components/ui/motion/ScrollProgress';
+import { MagneticButton } from './components/ui/motion/MagneticButton';
 
 const LandingPage = lazy(() => import('./pages/LandingPage').then(module => ({ default: module.LandingPage })));
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
@@ -56,9 +61,11 @@ function Nav() {
         </Popover.Root>
       </div>
 
-      <Link className="btn btn-primary nav-cta" to="/simulate">
-        <Play size={16} aria-hidden="true" style={{ marginRight: 6 }} /> Run a simulation
-      </Link>
+      <MagneticButton>
+        <Link className="btn btn-primary nav-cta" to="/simulate">
+          <Play size={16} aria-hidden="true" className="btn-icon" /> Run a simulation
+        </Link>
+      </MagneticButton>
     </nav>
   );
 }
@@ -74,17 +81,21 @@ function NotFound() {
           <Link className="btn btn-primary" to="/simulate">Open simulator →</Link>
         </div>
       </div>
+      <SiteFooter />
     </main>
   );
 }
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <SimulationProvider>
-        <AppRoutes />
-      </SimulationProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <SimulationProvider>
+          <DarkModeDetector />
+          <AppRoutes />
+        </SimulationProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
@@ -94,18 +105,19 @@ function AppRoutes() {
   const transition = reduced ? { duration: 0 } : { duration: .16, ease: 'easeOut' as const }; 
   
   return (
-    <Suspense fallback={<main className="shell"><Nav /><div className="empty"><span className="spinner" aria-label="Loading" /></div></main>}>
+    <Suspense fallback={<main className="shell"><Nav /><div className="empty"><span className="spinner" aria-label="Loading" /></div><SiteFooter /></main>}>
+      <ScrollProgress />
       <ApiStatus />
       <AnimatePresence mode="wait">
         <motion.div key={location.pathname} initial={reduced ? false : { opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={reduced ? undefined : { opacity: 0 }} transition={transition}>
           <Routes location={location}>
-            <Route path="/" element={<LandingPage nav={<Nav />} />} />
-            <Route path="/simulate" element={<Dashboard nav={<Nav />} />} />
-            <Route path="/runs/:runId" element={<Dashboard nav={<Nav />} />} />
-            <Route path="/experiments" element={<ExperimentsPage nav={<Nav />} />} />
-            <Route path="/compare" element={<ComparePage nav={<Nav />} />} />
-            <Route path="/analysis" element={<AnalysisPage nav={<Nav />} />} />
-            <Route path="/guide" element={<GuidePage nav={<Nav />} />} />
+            <Route path="/" element={<><LandingPage nav={<Nav />} /><SiteFooter /></>} />
+            <Route path="/simulate" element={<><Dashboard nav={<Nav />} /><SiteFooter /></>} />
+            <Route path="/runs/:runId" element={<><Dashboard nav={<Nav />} /><SiteFooter /></>} />
+            <Route path="/experiments" element={<><ExperimentsPage nav={<Nav />} /><SiteFooter /></>} />
+            <Route path="/compare" element={<><ComparePage nav={<Nav />} /><SiteFooter /></>} />
+            <Route path="/analysis" element={<><AnalysisPage nav={<Nav />} /><SiteFooter /></>} />
+            <Route path="/guide" element={<><GuidePage nav={<Nav />} /><SiteFooter /></>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </motion.div>
