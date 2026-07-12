@@ -1,0 +1,1 @@
+import{j as s}from"./index-V_S9CbKy.js";function n({chart:e=!1}){return s.jsxs("div",{className:"skeleton",role:"status","aria-label":"Loading content",children:[s.jsx("div",{className:"skeleton-line wide"}),s.jsx("div",{className:"skeleton-line"}),e&&s.jsx("div",{className:"skeleton-chart"}),s.jsx("span",{className:"sr-only",children:"Loading content"})]})}export{n as L};
