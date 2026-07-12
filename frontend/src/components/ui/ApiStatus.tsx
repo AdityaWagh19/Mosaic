@@ -17,7 +17,7 @@ export function ApiStatus() {
       <AlertTriangle size={18} className="api-status-icon" />
       <div>
         <strong>API connection unavailable</strong>
-        <span>Mosaic requires the backend simulation server to run locally. Ensure the server is running on port 8000.</span>
+        <span>The backend simulation server could not be reached. If a deployment is in progress, please wait a moment and refresh.</span>
       </div>
     </div>
   );
