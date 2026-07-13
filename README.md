@@ -1,5 +1,7 @@
 # Mosaic
 
+**Live Demo:** [https://mosaic-research.duckdns.org/](https://mosaic-research.duckdns.org/)
+
 People change how they speak depending on who they talk to. Over time, those small shifts accumulate into dialects: whole communities that sound like each other and different from everyone else. Mosaic simulates that process.
 
 Give it a population of speakers, a social network, and a set of rules about who influences whom. Watch accents drift, cluster, and either converge or hold their ground, depending on how the network is shaped.
