@@ -24,7 +24,7 @@ export interface TimelinePoint { timestep: number; diversity: number; pairwise_d
 export interface RunResponse {
   run_id: string;
   config: SimConfig & { config_fingerprint?: string };
-  metrics: { convergence_time: number; converged: boolean; final_diversity: number; final_pairwise_distance: number };
+  metrics: { convergence_time: number; converged: boolean; termination_reason?: string; final_diversity: number; final_pairwise_distance: number };
   timeline: TimelinePoint[];
   final_agent_states: AgentState[];
   network: { nodes: NetworkNode[]; edges: NetworkEdge[] };
