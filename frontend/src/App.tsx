@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+
 import { BrowserRouter, Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import * as Popover from '@radix-ui/react-popover';
 import { Menu, Play, ChevronDown } from 'lucide-react';
@@ -109,16 +109,12 @@ export default function App() {
 
 function AppRoutes() { 
   const location = useLocation(); 
-  const reduced = useReducedMotion(); 
-  const transition = reduced ? { duration: 0 } : { duration: .16, ease: 'easeOut' as const }; 
   
   return (
     <Suspense fallback={<main className="shell"><Nav /><div className="empty"><span className="spinner" aria-label="Loading" /></div><SiteFooter /></main>}>
       <ScrollProgress />
       <ApiStatus />
-      <AnimatePresence mode="wait">
-        <motion.div key={location.pathname} initial={reduced ? false : { opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={reduced ? undefined : { opacity: 0 }} transition={transition}>
-          <Routes location={location}>
+      <Routes location={location}>
             <Route path="/" element={<><LandingPage nav={<Nav />} /><SiteFooter /></>} />
             <Route path="/simulate" element={<><Dashboard nav={<Nav />} /><SiteFooter /></>} />
             <Route path="/runs/:runId" element={<><Dashboard nav={<Nav />} /><SiteFooter /></>} />
@@ -128,8 +124,6 @@ function AppRoutes() {
             <Route path="/guide" element={<><GuidePage nav={<Nav />} /><SiteFooter /></>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </motion.div>
-      </AnimatePresence>
     </Suspense>
   ); 
 }
