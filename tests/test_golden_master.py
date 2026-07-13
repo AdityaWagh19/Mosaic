@@ -46,6 +46,11 @@ def test_canonical_artifact_is_deterministic(client_and_runs_root):
     # Actually json.dumps with sort_keys=True should be stable, but just to be absolutely sure.
     current_canonical["config"].pop("config_fingerprint", None)
     
+    # UMAP relies on Numba and stochastic gradient descent. Even with random_state set,
+    # it produces different float trajectories across different CPU architectures/OS platforms.
+    # Exclude from golden master equality check.
+    current_canonical.pop("umap", None)
+    
     # 3. Load the golden fixture
     fixture_path = FIXTURE_DIR / "golden_master_sbm_9999.json"
     
@@ -60,6 +65,7 @@ def test_canonical_artifact_is_deterministic(client_and_runs_root):
         golden_canonical = json.load(f)
         
     golden_canonical["config"].pop("config_fingerprint", None)
+    golden_canonical.pop("umap", None)
         
     def assert_approx_equal(actual, expected, path="root"):
         if isinstance(actual, dict) and isinstance(expected, dict):
