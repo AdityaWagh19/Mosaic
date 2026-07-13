@@ -326,8 +326,15 @@ def run_simulation_stream(req: RunRequest):
     
     def generate():
         from simulation.runner import run_single_stream
-        for chunk in run_single_stream(config):
-            yield chunk
+        for chunk_str in run_single_stream(config):
+            if '"event": "complete"' in chunk_str:
+                import json
+                chunk = json.loads(chunk_str)
+                run_id = chunk["data"]["run_id"]
+                full_res = _construct_run_response(run_id).model_dump()
+                yield json.dumps({"event": "complete", "data": full_res}) + "\n"
+            else:
+                yield chunk_str
             
     return StreamingResponse(generate(), media_type="application/x-ndjson")
 

@@ -1,9 +1,10 @@
 import { motion, useReducedMotion } from 'motion/react';
-import React, { type ReactNode, type HTMLAttributes } from 'react';
+import { type ReactNode, type HTMLAttributes } from 'react';
 
 export function BlurReveal({ children, as = 'div', className = '', ...rest }: { children: ReactNode; as?: keyof typeof motion; className?: string } & HTMLAttributes<HTMLElement>) {
   const reduced = useReducedMotion();
-  const Component = motion[as as keyof typeof motion] as React.ElementType;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const Component = motion[as as keyof typeof motion] as any;
 
   return (
     <Component
