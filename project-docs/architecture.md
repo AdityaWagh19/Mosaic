@@ -137,7 +137,7 @@ Mosaic/
 ├── runs/                  # Auto-created; gitignored; one dir per run
 │   └── .gitkeep
 │
-├── research/              # Background research reports (3 markdown files)
+├── docs/                  # Background research reports (3 markdown files)
 ├── notebooks/             # Placeholder; demo.ipynb planned for Phase 8
 ├── project-docs/          # All design and specification documents
 ├── .github/               # GitHub Actions workflows (Phase 8)
@@ -171,6 +171,10 @@ class SimConfig:
     gamma: float = 1.0
     theta: float = 0.30
     sigma: float = 0.01
+    initial_sigma: float = 0.15
+    W: int = 20
+    epsilon_max: float = 1e-4
+    epsilon_distance: float = 1e-6
     seed: int = 42
     n_runs: int = 25
 ```
@@ -198,8 +202,7 @@ if ‖a_speaker − a_self‖ < θ:
 ### 3.4 `model.py` — MosaicModel
 
 - Edge list pre-computed at init; `self.rng = np.random.default_rng(seed)` controls all randomness
-- k-means cluster labels cached and refit every 500 steps (5-cluster default)
-- Convergence: `std(h_history[-200:]) < 0.001` with minimum 10 measurements
+- Convergence: Uses pairwise distance thresholding (`epsilon_distance`) when noiseless (`sigma == 0`) for *consensus*, and tracking maximum displacement over `W` timesteps below `epsilon_max` for *stationary distributions*.
 - Hard cutoff: stops at T regardless
 
 ### 3.5 `logger.py` — DataLogger
