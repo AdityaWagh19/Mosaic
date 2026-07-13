@@ -21,7 +21,16 @@ from simulation.network import COMMUNITY_PROTOTYPES, make_network
 
 
 def _cfg(topology: str, N: int = 20, seed: int = 0, **kwargs) -> SimConfig:
-    """Convenience factory for small test configs."""
+    """Convenience factory for small test configs. Uses dense defaults for connectivity."""
+    dense_defaults = {}
+    if topology == "er":
+        dense_defaults = {"p_er": 0.5}
+    elif topology == "sbm":
+        dense_defaults = {"p_in": 0.8, "p_out": 0.3}
+        
+    for k, v in dense_defaults.items():
+        kwargs.setdefault(k, v)
+        
     return replace(SimConfig(), topology=topology, N=N, seed=seed, **kwargs)
 
 

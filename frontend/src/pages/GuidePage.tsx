@@ -7,7 +7,7 @@ export function GuidePage({ nav }: { nav?: React.ReactNode }) {
     { title: 'What is a speaker?', copy: 'A speaker is an agent with six synthetic accent features. Mosaic does not represent recorded voices, real people, or demographic groups.', Ill: IllSpeaker },
     { title: 'How do speakers influence one another?', copy: 'At each step, a connected pair may accommodate when their accents are close enough. Prestige can weight the influence of highly connected speakers.', Ill: IllInfluence },
     { title: 'How does the network matter?', copy: 'The network determines who can meet. Random, clustered, hub-dominated, and two-community structures expose different paths for accent change.', Ill: IllNetwork },
-    { title: 'What do the metrics mean?', copy: 'Diversity describes how accent clusters are distributed. Pairwise distance describes average separation between speaker accent vectors. Convergence means diversity stabilized.', Ill: IllMetrics },
+    { title: 'What do the metrics mean?', copy: 'Diversity describes how accent clusters are distributed. Pairwise distance describes average separation between speaker accent vectors. Consensus means every speaker accent is within the model tolerance of every other.', Ill: IllMetrics },
     { title: 'What Mosaic does not model', copy: 'Mosaic is a conceptual agent-based model. It does not make claims about real speech communities, identity, geography, or causal mechanisms outside its explicit rules.', Ill: IllLimits },
   ];
 

@@ -92,6 +92,18 @@ class SimConfig:
     """Bounded confidence threshold — max accent distance for interaction.  Range (0, 1]."""
     sigma: float = 0.01
     """Phonetic drift noise std deviation.  Range [0, 0.05]."""
+    initial_sigma: float = 0.15
+    """Initial accent vector spread across the population. Range [0.05, 0.5]."""
+    
+    # ------------------------------------------------------------------
+    # Convergence Policy
+    # ------------------------------------------------------------------
+    W: int = 20
+    """Window of logged timesteps to monitor for stationarity (for noisy runs)."""
+    epsilon_max: float = 1e-4
+    """Maximum permitted agent displacement over the window W to declare stationarity."""
+    epsilon_distance: float = 1e-6
+    """Maximum pairwise distance tolerance to declare absolute consensus (when sigma=0)."""
 
     # ------------------------------------------------------------------
     # Reproducibility

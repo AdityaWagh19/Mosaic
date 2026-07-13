@@ -105,6 +105,10 @@
   gap: 16px;
 }
 
+.network-layout .viz {
+  min-height: 500px;
+}
+
 .agent-inspector {
   padding: 14px;
   border: 1px solid var(--color-hairline);
@@ -235,6 +239,9 @@
   .run-glance,
   .network-layout {
     grid-template-columns: 1fr;
+  }
+  .network-layout .viz {
+    height: clamp(300px, 50vh, 500px);
   }
   .viz-toolbar,
   .section-head {

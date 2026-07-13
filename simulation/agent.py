@@ -73,7 +73,7 @@ class AccentAgent(mesa.Agent):
     # Core update rule (model.md §6)
     # ------------------------------------------------------------------
 
-    def update(self, speaker: "AccentAgent") -> None:
+    def update(self, speaker: "AccentAgent") -> bool:
         """
         Listener (self) accommodates toward speaker following model.md §6.
 
@@ -87,6 +87,11 @@ class AccentAgent(mesa.Agent):
         Parameters
         ----------
         speaker : AccentAgent — the agent being listened to (j in the equation).
+        
+        Returns
+        -------
+        bool
+            True if the interaction was accepted (distance < theta), False otherwise.
         """
         diff = speaker.accent - self.accent
         distance = float(np.linalg.norm(diff))
@@ -97,7 +102,7 @@ class AccentAgent(mesa.Agent):
 
         # Bounded confidence (model.md §6): no interaction if accents too distant
         if distance >= _model.config.theta:
-            return
+            return False
 
         alpha_ij = _model.config.gamma * speaker.centrality
         noise = _model.rng.normal(0.0, _model.config.sigma, size=6)
@@ -107,6 +112,7 @@ class AccentAgent(mesa.Agent):
             0.0,
             1.0,
         )
+        return True
 
     # ------------------------------------------------------------------
     # Representation

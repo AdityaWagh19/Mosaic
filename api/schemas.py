@@ -17,7 +17,13 @@ class RunRequest(BaseModel):
     gamma: float = Field(default=1.0, ge=0.0, le=2.0)
     theta: float = Field(default=0.3, gt=0.0, le=1.0)
     sigma: float = Field(default=0.01, ge=0.0, le=0.05)
+    initial_sigma: float = Field(default=0.15, ge=0.05, le=0.5)
     seed: int = Field(default=42, ge=0)
+    
+    # Convergence Policy
+    W: int = Field(default=20, ge=5, le=100)
+    epsilon_max: float = Field(default=1e-4, ge=1e-6, le=1e-2)
+    epsilon_distance: float = Field(default=1e-6, ge=1e-8, le=1e-2)
     
     # Topology-specific defaults (can be overridden)
     p_er: float = Field(default=0.05, gt=0.0, le=1.0)
@@ -57,11 +63,15 @@ class TimelineEntry(BaseModel):
     timestep: int
     diversity: float
     pairwise_distance: float
+    accepted_interactions: int = 0
+    rejected_interactions: int = 0
+    eligible_edges_fraction: float = 0.0
 
 
 class MetricsData(BaseModel):
     convergence_time: int
     converged: bool
+    termination_reason: str = "Max steps reached"
     final_diversity: float
     final_pairwise_distance: float
 

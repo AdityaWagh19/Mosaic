@@ -48,7 +48,9 @@ export const useD3Network = ({ nodes, edges, agentStates, width, height, onSelec
       .force("link", d3.forceLink(graphEdges).id((d: any) => d.id).distance(20))
       .force("charge", d3.forceManyBody().strength(-30))
       .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collide", d3.forceCollide().radius((d: any) => 3 + d.centrality * 12 + 2));
+      .force("collide", d3.forceCollide().radius((d: any) => 3 + d.centrality * 12 + 2))
+      .force("x", d3.forceX(width / 2).strength(0.05))
+      .force("y", d3.forceY(height / 2).strength(0.05));
 
     // Links
     const link = g.append("g")
@@ -93,17 +95,41 @@ export const useD3Network = ({ nodes, edges, agentStates, width, height, onSelec
         .attr("cy", (d: any) => d.y);
     });
 
+    const zoomToFit = () => {
+      if (graphNodes.length === 0) return;
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      graphNodes.forEach((n: any) => {
+        const r = 3 + n.centrality * 12;
+        if (n.x - r < minX) minX = n.x - r;
+        if (n.x + r > maxX) maxX = n.x + r;
+        if (n.y - r < minY) minY = n.y - r;
+        if (n.y + r > maxY) maxY = n.y + r;
+      });
+      const dx = maxX - minX;
+      const dy = maxY - minY;
+      const x = (minX + maxX) / 2;
+      const y = (minY + maxY) / 2;
+      
+      if (dx === 0 || dy === 0 || !isFinite(dx)) return;
+      
+      // Calculate scale to fit within viewport with some padding (90% of width/height)
+      const scale = Math.max(0.1, Math.min(4, 0.9 / Math.max(dx / width, dy / height)));
+      const translate = [width / 2 - scale * x, height / 2 - scale * y];
+      
+      svg.transition().duration(750).call(zoom.transform as any, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
+    };
+
+    simulation.on("end", zoomToFit);
+
     // Handle Reduced Motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
       simulation.stop();
       simulation.tick(300); // Fast-forward
       simulation.tick(300); // Fast-forward
-      // Manually trigger render by firing the tick listener callback if needed
-      // Actually we don't need to manually trigger if we just update the attr directly
-      // But we can just restart it with 0 alpha.
       link.attr("x1", (d: any) => d.source.x).attr("y1", (d: any) => d.source.y).attr("x2", (d: any) => d.target.x).attr("y2", (d: any) => d.target.y);
       node.attr("cx", (d: any) => d.x).attr("cy", (d: any) => d.y);
+      zoomToFit();
     }
 
     // Cleanup

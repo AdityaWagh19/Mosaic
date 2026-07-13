@@ -101,10 +101,14 @@ def get_config_schema():
         "defaults": RunRequest().model_dump(),
         "fields": {
             "N": {"label": "Agents", "help": "Number of speakers in the network.", "min": 5, "max": 2000, "step": 10},
-            "T": {"label": "Maximum steps", "help": "Stops early if the diversity criterion stabilizes.", "min": 100, "max": 100000, "step": 100},
+            "T": {"label": "Maximum steps", "help": "Stops early only when every agent accent is within the model's consensus tolerance.", "min": 100, "max": 100000, "step": 100},
             "gamma": {"label": "Prestige weight", "help": "Influence advantage of well-connected speakers.", "min": 0, "max": 2, "step": 0.1},
             "theta": {"label": "Confidence bound", "help": "Largest accent difference that still permits accommodation.", "min": 0.05, "max": 0.5, "step": 0.05},
             "sigma": {"label": "Phonetic drift", "help": "Random variation added during accommodation.", "min": 0, "max": 0.05, "step": 0.01},
+            "initial_sigma": {"label": "Initial spread", "help": "Initial accent vector spread across the population.", "min": 0.05, "max": 0.5, "step": 0.05},
+            "W": {"label": "Stationarity window", "help": "Window of logged timesteps to monitor for stationarity.", "min": 5, "max": 100, "step": 5},
+            "epsilon_max": {"label": "Stationarity tolerance", "help": "Maximum permitted agent displacement over the window W to declare stationarity.", "min": 1e-6, "max": 1e-2, "step": 1e-5},
+            "epsilon_distance": {"label": "Consensus tolerance", "help": "Maximum pairwise distance tolerance to declare absolute consensus.", "min": 1e-8, "max": 1e-2, "step": 1e-6},
             "p_er": {"label": "Connection probability", "help": "Chance of a tie between two speakers.", "min": 0.01, "max": 1, "step": 0.01},
             "k_ws": {"label": "Nearest neighbours", "help": "Initial local ties per speaker.", "min": 2, "max": 200, "step": 2},
             "p_rewire": {"label": "Rewiring probability", "help": "Chance a local tie becomes a shortcut.", "min": 0, "max": 1, "step": 0.05},
@@ -166,6 +170,7 @@ def export_run(run_id: str, format: str = Query(default="json", pattern="^(json|
     if format == "csv":
         path = run_dir / "agent_states.csv"
         return FileResponse(path, media_type="text/csv", filename=f"{run_id}-agent-states.csv")
+    
     return JSONResponse(content=_construct_run_response(run_id).model_dump())
 
 
@@ -239,71 +244,51 @@ def _construct_run_response(run_id: str) -> RunResponse:
     if not run_dir.exists():
         raise HTTPException(status_code=404, detail="Run not found.")
 
-    with open(run_dir / "config.json") as f:
-        config_dict = json.load(f)
-    with open(run_dir / "metrics.json") as f:
-        metrics_dict = json.load(f)
-    with open(run_dir / "timeline.json") as f:
-        timeline_list = json.load(f)
+    canonical_path = run_dir / "canonical_run.json"
+    if not canonical_path.exists():
+        raise HTTPException(status_code=500, detail="Run is missing canonical artifact. Old runs may need to be deleted.")
 
-    # Reconstruct the config to build the network
-    # We ignore unknown keys in case the config format changed
-    config = SimConfig.from_dict(config_dict)
+    with open(canonical_path) as f:
+        canonical = json.load(f)
+
+    # 1. Config
+    config_dict = canonical["config"]
     
-    # Read the final timestep from agent_states.csv
-    csv_path = run_dir / "agent_states.csv"
-    if not csv_path.exists():
-        raise HTTPException(status_code=500, detail="Missing agent_states.csv")
-        
-    df = pd.read_csv(csv_path)
-    # Get only the last timestep
-    final_t = df["timestep"].max()
-    final_df = df[df["timestep"] == final_t]
-
-    # Run kmeans to get cluster_ids (since Phase 5 expects them)
-    # Or just use the dimensions to return to the frontend.
-    # The MVP and Phase 3 spec says frontend needs `cluster_id`.
-    # Let's perform k-means here if needed, or check if it's already in the CSV.
-    # Wait, the simulation does NOT write cluster_id to agent_states.csv!
-    # Phase 2 clustering adds it. Let's do a quick k-means to supply `cluster_id`.
+    # 2. Metrics
+    metrics_dict = canonical["metrics"]
+    
+    # 3. Timeline
+    timeline_list = canonical["timeline"]
+    
+    # 4. Network
+    network_data = NetworkData(
+        nodes=[NetworkNode(**n) for n in canonical["network"]["nodes"]],
+        edges=[NetworkEdge(**e) for e in canonical["network"]["edges"]]
+    )
+    
+    # 5. Final Agent States (with cluster_id injected from KMeans for Phase 5)
+    # We still need cluster_ids for the frontend. We can compute them here fast, or store them in canonical.
+    # Let's compute it once and serve it.
+    snapshots = canonical["snapshots"]
+    final_snapshot = snapshots[-1]
+    
     from sklearn.cluster import KMeans
-    accent_cols = [f"d{i}" for i in range(6)]
-    accents = final_df[accent_cols].values
-    kmeans = KMeans(n_clusters=5, random_state=config.seed, n_init=10)
-    cluster_ids = kmeans.fit_predict(accents)
-    final_df = final_df.copy()
-    final_df["cluster_id"] = cluster_ids
-
+    import numpy as np
+    X_final = np.array([a["accent"] for a in sorted(final_snapshot["agents"], key=lambda x: x["agent_id"])])
+    kmeans = KMeans(n_clusters=5, random_state=config_dict.get("seed", 42), n_init=10)
+    cluster_ids = kmeans.fit_predict(X_final)
+    
     agent_states = []
-    for _, row in final_df.iterrows():
+    for i, agent in enumerate(sorted(final_snapshot["agents"], key=lambda x: x["agent_id"])):
         agent_states.append(
             AgentState(
-                agent_id=int(row["agent_id"]),
-                accent=[float(row[c]) for c in accent_cols],
-                community_id=int(row["community_id"]),
-                centrality=float(row["centrality"]),
-                cluster_id=int(row["cluster_id"]),
+                agent_id=agent["agent_id"],
+                accent=agent["accent"],
+                community_id=agent["community_id"],
+                centrality=agent["centrality"],
+                cluster_id=int(cluster_ids[i])
             )
         )
-
-    # Reconstruct the network using the same seed
-    G = make_network(config)
-    
-    nodes = []
-    for n in G.nodes():
-        nodes.append(
-            NetworkNode(
-                id=n,
-                community_id=G.nodes[n]["community_id"],
-                centrality=G.nodes[n]["centrality"],
-            )
-        )
-        
-    edges = []
-    for u, v in G.edges():
-        edges.append(NetworkEdge(source=u, target=v))
-        
-    network_data = NetworkData(nodes=nodes, edges=edges)
 
     return RunResponse(
         run_id=run_id,
@@ -341,86 +326,17 @@ def get_results(run_id: str):
 def get_umap(run_id: str):
     """
     Get UMAP coordinates for 4 timesteps: [0, T/3, 2T/3, t_final].
-    Computes them on-the-fly if missing and caches the result.
+    Reads directly from canonical artifact where it's pre-computed.
     """
     run_dir = RUNS_ROOT / run_id
     if not run_dir.exists():
         raise HTTPException(status_code=404, detail="Run not found.")
         
-    umap_path = run_dir / "umap_coords.json"
-    if umap_path.exists():
-        with open(umap_path) as f:
-            cached = json.load(f)
-        if isinstance(cached, dict) and "snapshots" in cached:
-            return cached
-            
-    # Need to compute UMAP
-    csv_path = run_dir / "agent_states.csv"
-    if not csv_path.exists():
-        raise HTTPException(status_code=500, detail="Missing agent_states.csv")
+    canonical_path = run_dir / "canonical_run.json"
+    if not canonical_path.exists():
+        raise HTTPException(status_code=500, detail="Missing canonical artifact. Old runs may need to be deleted.")
         
-    df = pd.read_csv(csv_path)
-    timesteps = sorted(df["timestep"].unique())
-    if not timesteps:
-        return {}
+    with open(canonical_path) as f:
+        canonical = json.load(f)
         
-    final_t = timesteps[-1]
-    
-    # Pick 4 representative timesteps
-    target_ts = [
-        0,
-        timesteps[max(1, len(timesteps)//3)],
-        timesteps[max(1, 2*len(timesteps)//3)],
-        final_t
-    ]
-    # Deduplicate and sort
-    target_ts = sorted(list(set(target_ts)))
-    
-    # To keep UMAP consistent across timesteps, we fit on the union of these timesteps
-    # or just fit on the final state and transform the others.
-    # UMAP standard is to fit on the final state to establish cluster boundaries,
-    # then transform the earlier states into that space.
-    
-    accent_cols = [f"d{i}" for i in range(6)]
-    final_df = df[df["timestep"] == final_t]
-    X_final = final_df[accent_cols].values
-    
-    # Use same config seed for reproducibility
-    with open(run_dir / "config.json") as f:
-        config = json.load(f)
-    seed = config.get("seed", 42)
-    
-    reducer = umap.UMAP(n_components=2, random_state=seed, n_neighbors=15, min_dist=0.1)
-    reducer.fit(X_final)
-    
-    snapshots = []
-    for t in target_ts:
-        timestep_df = df[df["timestep"] == t].sort_values("agent_id")
-        X_t = timestep_df[accent_cols].values
-        coords_t = reducer.transform(X_t)
-        points = [
-            {
-                "agent_id": int(row.agent_id),
-                "x": float(coords_t[index][0]),
-                "y": float(coords_t[index][1]),
-                "community_id": int(row.community_id),
-            }
-            for index, row in enumerate(timestep_df.itertuples(index=False))
-        ]
-        snapshots.append({"timestep": int(t), "points": points})
-
-    response = {
-        "run_id": run_id,
-        "metadata": {
-            "method": "UMAP",
-            "n_neighbors": 15,
-            "min_dist": 0.1,
-            "fit_timestep": int(final_t),
-        },
-        "snapshots": snapshots,
-    }
-
-    with open(umap_path, "w") as f:
-        json.dump(response, f)
-        
-    return response
+    return canonical.get("umap", {})

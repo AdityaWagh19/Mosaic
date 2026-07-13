@@ -115,20 +115,11 @@ def _ensure_connected(
             return G
         seed += _SEED_OFFSET
 
-    # Final fallback: largest connected component
-    G_final = builder(config, seed)
-    lcc_nodes = max(nx.connected_components(G_final), key=len)
-    G_lcc = G_final.subgraph(lcc_nodes).copy()
-    # Re-index nodes to 0..len(lcc)-1 so node IDs are contiguous
-    G_lcc = nx.convert_node_labels_to_integers(G_lcc)
-    warnings.warn(
+    # Final fallback: strict failure instead of silent N reduction
+    raise ValueError(
         f"Topology '{topology}' seed={initial_seed}: all {_MAX_RETRIES} retries "
-        f"produced disconnected graphs.  Using largest component "
-        f"(N reduced: {config.N} → {len(G_lcc)}).",
-        RuntimeWarning,
-        stacklevel=3,
+        f"produced disconnected graphs. Please increase network density (e.g., higher edge probability or k)."
     )
-    return G_lcc
 
 
 # ---------------------------------------------------------------------------

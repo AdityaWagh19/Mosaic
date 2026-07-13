@@ -100,6 +100,7 @@ class DataLogger:
 
         # Internal buffer for agent state rows (flushed in close())
         self._rows: list[list] = []
+        self._canonical_snapshots: list[dict] = []
 
         module_logger.debug("DataLogger initialised for run '%s'.", self.run_id)
 
@@ -119,6 +120,7 @@ class DataLogger:
         t      : current simulation timestep
         agents : the model's agents_map (node_id → AccentAgent)
         """
+        snapshot_agents = []
         for agent_id in sorted(agents):
             agent = agents[agent_id]
             a = agent.accent
@@ -134,6 +136,19 @@ class DataLogger:
                 round(float(a[4]), 6),
                 round(float(a[5]), 6),
             ])
+            
+            # Full precision for canonical JSON
+            snapshot_agents.append({
+                "agent_id": agent_id,
+                "community_id": agent.community_id,
+                "centrality": agent.centrality,
+                "accent": a.tolist()
+            })
+            
+        self._canonical_snapshots.append({
+            "timestep": t,
+            "agents": snapshot_agents
+        })
 
     # ------------------------------------------------------------------
     # Finalisation
@@ -173,11 +188,26 @@ class DataLogger:
         with open(timeline_path, "w", encoding="utf-8") as fh:
             json.dump(timeline, fh, indent=2)
 
+        # 4. Write canonical_run.json (full precision, single source of truth)
+        with open(self.run_dir / "config.json") as f:
+            config_data = json.load(f)
+            
+        canonical_data = {
+            "config": config_data,
+            "metrics": scalar_metrics,
+            "timeline": timeline,
+            "snapshots": self._canonical_snapshots
+        }
+        canonical_path = self.run_dir / "canonical_run.json"
+        with open(canonical_path, "w", encoding="utf-8") as fh:
+            json.dump(canonical_data, fh, separators=(",", ":"))
+
         module_logger.debug(
-            "Run '%s': wrote %d CSV rows, metrics.json, timeline.json.",
+            "Run '%s': wrote %d CSV rows, canonical JSON, metrics, timeline.",
             self.run_id,
             len(self._rows),
         )
 
         # Free memory
         self._rows = []
+        self._canonical_snapshots = []

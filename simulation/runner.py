@@ -71,7 +71,91 @@ def run_single(config: SimConfig) -> dict:
     G = make_network(config)
     model = MosaicModel(config, G)
     log = DataLogger(config)
-    return model.run(log)
+    
+    metrics = model.run(log)
+    
+    import json
+    import analysis._umap_compat
+    import umap
+    import numpy as np
+
+    # 1. Build Network structure
+    nodes = []
+    for n in G.nodes():
+        nodes.append({
+            "id": n,
+            "community_id": int(G.nodes[n]["community_id"]),
+            "centrality": float(G.nodes[n]["centrality"]),
+        })
+    edges = [{"source": u, "target": v} for u, v in G.edges()]
+    network_data = {"nodes": nodes, "edges": edges}
+
+    # 2. Compute UMAP for canonical artifact
+    canonical_path = log.run_dir / "canonical_run.json"
+    with open(canonical_path) as f:
+        canonical_data = json.load(f)
+        
+    snapshots = canonical_data["snapshots"]
+    if not snapshots:
+        canonical_data["network"] = network_data
+        with open(canonical_path, "w", encoding="utf-8") as f:
+            json.dump(canonical_data, f, separators=(",", ":"))
+        return metrics
+
+    # Determine 4 target timesteps: [0, T/3, 2T/3, final]
+    timesteps = [s["timestep"] for s in snapshots]
+    final_t = timesteps[-1]
+    
+    if len(timesteps) < 2:
+        target_ts = [final_t]
+    else:
+        target_ts = [
+            0,
+            timesteps[max(1, len(timesteps)//3)],
+            timesteps[min(len(timesteps)-1, max(1, 2*len(timesteps)//3))],
+            final_t
+        ]
+    target_ts = sorted(list(set(target_ts)))
+
+    # Fit UMAP on final timestep
+    final_snapshot = next(s for s in snapshots if s["timestep"] == final_t)
+    X_final = np.array([a["accent"] for a in sorted(final_snapshot["agents"], key=lambda x: x["agent_id"])])
+    
+    reducer = umap.UMAP(n_components=2, random_state=config.seed, n_neighbors=15, min_dist=0.1)
+    reducer.fit(X_final)
+    
+    umap_snapshots = []
+    for t in target_ts:
+        snap_t = next(s for s in snapshots if s["timestep"] == t)
+        X_t = np.array([a["accent"] for a in sorted(snap_t["agents"], key=lambda x: x["agent_id"])])
+        coords_t = reducer.transform(X_t)
+        
+        points = []
+        for i, agent in enumerate(sorted(snap_t["agents"], key=lambda x: x["agent_id"])):
+            points.append({
+                "agent_id": agent["agent_id"],
+                "x": float(coords_t[i][0]),
+                "y": float(coords_t[i][1]),
+                "community_id": agent["community_id"]
+            })
+        umap_snapshots.append({"timestep": t, "points": points})
+        
+    canonical_data["network"] = network_data
+    canonical_data["umap"] = {
+        "metadata": {
+            "method": "UMAP",
+            "n_neighbors": 15,
+            "min_dist": 0.1,
+            "fit_timestep": int(final_t),
+        },
+        "snapshots": umap_snapshots
+    }
+    
+    # Save back to disk
+    with open(canonical_path, "w", encoding="utf-8") as f:
+        json.dump(canonical_data, f, separators=(",", ":"))
+        
+    return metrics
 
 
 # ---------------------------------------------------------------------------

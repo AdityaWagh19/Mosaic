@@ -102,6 +102,18 @@ def shannon_diversity_from_labels(labels: np.ndarray) -> float:
 # 2. Mean Pairwise Accent Distance  (D(t))
 # ---------------------------------------------------------------------------
 
+def pairwise_distance_summary(accent_matrix: np.ndarray) -> tuple[float, float]:
+    """Return ``(mean, maximum)`` Euclidean distance across agent pairs.
+
+    The maximum (population diameter) is the appropriate quantity for a
+    consensus decision: a small mean can still conceal a small, distant group.
+    """
+    if len(accent_matrix) < 2:
+        return 0.0, 0.0
+    distances = pdist(accent_matrix, metric="euclidean")
+    return float(distances.mean()), float(distances.max())
+
+
 def mean_pairwise_distance(accent_matrix: np.ndarray) -> float:
     """
     Average Euclidean distance between all agent pairs.
@@ -119,9 +131,7 @@ def mean_pairwise_distance(accent_matrix: np.ndarray) -> float:
     -------
     d : mean pairwise distance (float ≥ 0)
     """
-    if len(accent_matrix) < 2:
-        return 0.0
-    return float(pdist(accent_matrix, metric="euclidean").mean())
+    return pairwise_distance_summary(accent_matrix)[0]
 
 
 # ---------------------------------------------------------------------------
