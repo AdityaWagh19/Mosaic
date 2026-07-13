@@ -479,4 +479,4 @@ class MosaicModel(mesa.Model):
             log.run_id, termination_reason, t_conv, final_h, final_d,
         )
         
-        yield json.dumps({"event": "complete", "data": {**metrics_dict, "timeline": timeline}}) + "\n"
+        yield json.dumps({"event": "_model_complete", "data": {**metrics_dict, "timeline": timeline}}) + "\n"

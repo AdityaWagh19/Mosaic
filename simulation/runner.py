@@ -90,8 +90,15 @@ def run_single_stream(config: SimConfig):
     yield json.dumps(network_payload) + "\n"
     
     # 2. Yield chunks from the simulation
+    model_complete_data = None
     for chunk in model.run_stream(log):
+        if '"event": "_model_complete"' in chunk:
+            model_complete_data = json.loads(chunk)["data"]
+            continue
         yield chunk
+        
+    if not model_complete_data:
+        return
         
     # 3. Post-process UMAP offline and yield
     try:
@@ -103,8 +110,13 @@ def run_single_stream(config: SimConfig):
         with open(canonical_path) as f:
             canonical_data = json.load(f)
             
+        canonical_data["network"] = {"nodes": nodes, "edges": edges}
+        with open(canonical_path, "w", encoding="utf-8") as f:
+            json.dump(canonical_data, f, separators=(",", ":"))
+            
         snapshots = canonical_data["snapshots"]
         if not snapshots:
+            yield json.dumps({"event": "complete", "data": model_complete_data}) + "\n"
             return
 
         ts_list = sorted([s["timestep"] for s in snapshots])
@@ -156,10 +168,17 @@ def run_single_stream(config: SimConfig):
             },
             "snapshots": umap_snapshots
         }
+        
+        canonical_data["umap"] = umap_payload
+        with open(canonical_path, "w", encoding="utf-8") as f:
+            json.dump(canonical_data, f, separators=(",", ":"))
+            
         yield json.dumps({"event": "umap", "data": umap_payload}) + "\n"
 
     except Exception as e:
         logger.error(f"UMAP computation failed during stream for {log.run_id}: {e}")
+
+    yield json.dumps({"event": "complete", "data": model_complete_data}) + "\n"
 
 
 def run_single(config: SimConfig) -> dict:
