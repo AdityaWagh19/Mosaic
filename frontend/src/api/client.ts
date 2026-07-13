@@ -1,4 +1,4 @@
-import type { AnalysisSummary, ConfigSchema, Experiment, RunResponse, RunSummary, SimConfig, SnapshotsResponse, TopologyInfo, UmapResponse } from '../types/models';
+import type { AnalysisSummary, ConfigSchema, Experiment, RunResponse, RunSummary, SimConfig, SnapshotsResponse, TopologyInfo, UmapResponse, NetworkNode, NetworkEdge, TimelinePoint } from '../types/models';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -18,8 +18,8 @@ export const runSimulation = (config: SimConfig) => request<RunResponse>('/run',
 export const runSimulationStream = async (
   config: SimConfig,
   handlers: {
-    onStart: (data: unknown) => void;
-    onSnapshot: (data: unknown) => void;
+    onStart: (data: { network: { nodes: NetworkNode[]; edges: NetworkEdge[] } }) => void;
+    onSnapshot: (data: TimelinePoint) => void;
     onUmap: (data: UmapResponse) => void;
     onComplete: (data: RunResponse) => void;
   }
