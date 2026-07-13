@@ -153,6 +153,7 @@ Mosaic/
 ├── runs/             Per-run artifacts; generated locally
 ├── results/          Aggregate metrics, ML summary, and generated figures
 ├── tests/            Simulation and API test suite
+├── docs/             Background research reports and academic literature review
 └── project-docs/     Product, model, architecture, experiment, ML, and design documents
 ```
 
