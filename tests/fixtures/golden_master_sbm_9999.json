@@ -27,7 +27,8 @@
     "converged": false,
     "convergence_time": 1000,
     "final_diversity": 1.487798,
-    "final_pairwise_distance": 0.749029
+    "final_pairwise_distance": 0.749029,
+    "termination_reason": "Maximum interactions reached"
   },
   "network": {
     "edges": [

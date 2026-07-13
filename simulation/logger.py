@@ -172,10 +172,11 @@ class DataLogger:
             writer.writerow(_CSV_HEADERS)
             writer.writerows(self._rows)
 
-        # 2. Write metrics.json (only the 4 scalar outputs as per model.md §9)
+        # 2. Write metrics.json
         scalar_metrics = {
             "convergence_time":        metrics["convergence_time"],
             "converged":               metrics["converged"],
+            "termination_reason":      metrics.get("termination_reason", "Max steps reached"),
             "final_diversity":         metrics["final_diversity"],
             "final_pairwise_distance": metrics["final_pairwise_distance"],
         }
