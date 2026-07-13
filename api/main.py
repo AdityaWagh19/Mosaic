@@ -336,8 +336,11 @@ def run_simulation_stream(req: RunRequest):
             else:
                 yield chunk_str
             
-    return StreamingResponse(generate(), media_type="application/x-ndjson")
-
+    return StreamingResponse(
+        generate(),
+        media_type="application/x-ndjson",
+        headers={"X-Accel-Buffering": "no"}
+    )
 
 @app.get("/results/{run_id}", response_model=RunResponse)
 def get_results(run_id: str):
