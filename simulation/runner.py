@@ -56,6 +56,112 @@ _SUMMARY_COLUMNS = [
 # Single-run helper (used by run_monte_carlo and by heatmaps.py)
 # ---------------------------------------------------------------------------
 
+def run_single_stream(config: SimConfig):
+    """
+    Execute one simulation run and yield progress chunks via NDJSON.
+    Delegates to model.run_stream.
+    """
+    import json
+    from simulation.network import make_network
+    
+    G = make_network(config)
+    model = MosaicModel(config, G)
+    log = DataLogger(config)
+    
+    # 1. Yield initial network payload
+    nodes = []
+    for n in G.nodes():
+        nodes.append({
+            "id": n,
+            "community_id": int(G.nodes[n]["community_id"]),
+            "centrality": float(G.nodes[n]["centrality"]),
+        })
+    edges = [{"source": u, "target": v} for u, v in G.edges()]
+    
+    network_payload = {
+        "event": "start",
+        "data": {
+            "network": {
+                "nodes": nodes,
+                "edges": edges
+            }
+        }
+    }
+    yield json.dumps(network_payload) + "\n"
+    
+    # 2. Yield chunks from the simulation
+    for chunk in model.run_stream(log):
+        yield chunk
+        
+    # 3. Post-process UMAP offline and yield
+    try:
+        import analysis._umap_compat
+        import umap
+        import numpy as np
+
+        canonical_path = log.run_dir / "canonical_run.json"
+        with open(canonical_path) as f:
+            canonical_data = json.load(f)
+            
+        snapshots = canonical_data["snapshots"]
+        if not snapshots:
+            return
+
+        ts_list = sorted([s["timestep"] for s in snapshots])
+        selected_ts = [ts_list[0]]
+        if len(ts_list) > 1:
+            selected_ts.append(ts_list[len(ts_list) // 3])
+            selected_ts.append(ts_list[2 * len(ts_list) // 3])
+            selected_ts.append(ts_list[-1])
+        selected_ts = sorted(list(set(selected_ts)))
+        
+        final_agents = snapshots[-1]["agents"]
+        n_agents = len(final_agents)
+        n_features = len(final_agents[0]["accent"])
+
+        X_final = np.zeros((n_agents, n_features))
+        for i, a in enumerate(final_agents):
+            for f_idx in range(n_features):
+                X_final[i, f_idx] = a["accent"][f_idx]
+
+        reducer = umap.UMAP(n_neighbors=15, min_dist=0.1, random_state=42)
+        reducer.fit(X_final)
+
+        umap_snapshots = []
+        for ts in selected_ts:
+            s_data = next(s for s in snapshots if s["timestep"] == ts)
+            X_t = np.zeros((n_agents, n_features))
+            for i, a in enumerate(s_data["agents"]):
+                for f_idx in range(n_features):
+                    X_t[i, f_idx] = a["accent"][f_idx]
+            
+            coords = reducer.transform(X_t)
+            points = []
+            for i, a in enumerate(s_data["agents"]):
+                points.append({
+                    "agent_id": a["agent_id"],
+                    "x": float(coords[i, 0]),
+                    "y": float(coords[i, 1]),
+                    "community_id": a["community_id"]
+                })
+            umap_snapshots.append({"timestep": ts, "points": points})
+
+        umap_payload = {
+            "run_id": log.run_id,
+            "metadata": {
+                "method": "UMAP",
+                "n_neighbors": 15,
+                "min_dist": 0.1,
+                "fit_timestep": ts_list[-1]
+            },
+            "snapshots": umap_snapshots
+        }
+        yield json.dumps({"event": "umap", "data": umap_payload}) + "\n"
+
+    except Exception as e:
+        logger.error(f"UMAP computation failed during stream for {log.run_id}: {e}")
+
+
 def run_single(config: SimConfig) -> dict:
     """
     Execute one simulation run and return its metrics dict.
