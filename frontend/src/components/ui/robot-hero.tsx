@@ -489,9 +489,9 @@ export function RobotHero() {
   return (
     <section 
       ref={containerRef}
-      className="relative w-full h-full min-h-[500px] overflow-hidden"
+      style={{ position: 'relative', width: '100%', height: '100%', minHeight: '500px', overflow: 'hidden' }}
     >
-      <div className="absolute inset-0 z-10">
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10 }}>
         <Canvas 
           shadows 
           camera={{ position: [0, 0.2, 6], fov: 40 }}
