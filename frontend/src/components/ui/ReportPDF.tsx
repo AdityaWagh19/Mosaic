@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import type { RunResponse } from '../../types/models';
 
 const styles = StyleSheet.create({
@@ -18,9 +18,9 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', paddingVertical: 6, borderBottom: '1pt solid #f3f4f6' },
   col1: { width: '40%', fontSize: 10, color: '#6b7280' },
   col2: { width: '60%', fontSize: 10, color: '#111827', fontWeight: 'bold' },
-  text: { fontSize: 11, color: '#4b5563', lineHeight: 1.6 },
-  imageContainer: { width: '100%', height: 300, backgroundColor: '#f9fafb', border: '1pt solid #e5e7eb', borderRadius: 4, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  image: { objectFit: 'contain', width: '100%', height: '100%' },
+  conclusionBox: { backgroundColor: '#f0fdf4', border: '1pt solid #bbf7d0', padding: 15, borderRadius: 4, marginTop: 10 },
+  conclusionTitle: { fontSize: 12, fontWeight: 'bold', color: '#166534', marginBottom: 8 },
+  conclusionText: { fontSize: 11, color: '#15803d', lineHeight: 1.6 },
   footer: { position: 'absolute', bottom: 30, left: 40, right: 40, borderTop: '1pt solid #e5e7eb', paddingTop: 10, flexDirection: 'row', justifyContent: 'space-between' },
   footerText: { fontSize: 9, color: '#9ca3af' },
   definition: { marginBottom: 10 },
@@ -30,13 +30,16 @@ const styles = StyleSheet.create({
 
 interface ReportPDFProps {
   result: RunResponse;
-  networkImage?: string;
-  umapImage?: string;
-  timelineImage?: string;
 }
 
-export function ReportPDF({ result, networkImage, umapImage, timelineImage }: ReportPDFProps) {
+export function ReportPDF({ result }: ReportPDFProps) {
   const { config, metrics } = result;
+  
+  const conclusionText = metrics.converged 
+    ? (metrics.termination_reason === 'stationarity' 
+        ? `The population stabilized into a noisy equilibrium after ${metrics.convergence_time} steps. Final diversity was ${metrics.final_diversity.toFixed(3)}.` 
+        : `All agent accents reached the model's consensus tolerance after ${metrics.convergence_time} steps. Final diversity was ${metrics.final_diversity.toFixed(3)}.`) 
+    : `The population did not reach the model's convergence criteria within the ${result.config.T.toLocaleString()}-step limit. Final diversity was ${metrics.final_diversity.toFixed(3)}.`; 
 
   return (
     <Document>
@@ -84,85 +87,18 @@ export function ReportPDF({ result, networkImage, umapImage, timelineImage }: Re
           <View style={styles.row}><Text style={styles.col1}>Sigma (Drift Noise)</Text><Text style={styles.col2}>{config.sigma}</Text></View>
           <View style={styles.row}><Text style={styles.col1}>Random Seed</Text><Text style={styles.col2}>{config.seed}</Text></View>
         </View>
-
-        {timelineImage && (
-          <View style={styles.section} break>
-            <Text style={styles.sectionTitle}>Evidence over time</Text>
-            <View style={{ ...styles.imageContainer, height: 180 }}>
-              <Image src={timelineImage} style={styles.image} />
-            </View>
+        
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Conclusion & Interpretation</Text>
+          <View style={styles.conclusionBox}>
+            <Text style={styles.conclusionTitle}>Run Summary</Text>
+            <Text style={styles.conclusionText}>{conclusionText}</Text>
           </View>
-        )}
-
-        {networkImage && (
-          <View style={styles.section} break>
-            <Text style={styles.sectionTitle}>Social Network</Text>
-            <View style={{ ...styles.imageContainer, height: 250 }}>
-              <Image src={networkImage} style={styles.image} />
-            </View>
-          </View>
-        )}
-
-        {umapImage && (
-          <View style={styles.section} break>
-            <Text style={styles.sectionTitle}>Accent Evolution</Text>
-            <View style={{ ...styles.imageContainer, height: 250 }}>
-              <Image src={umapImage} style={styles.image} />
-            </View>
-          </View>
-        )}
+        </View>
 
         <View style={styles.footer} fixed>
           <Text style={styles.footerText}>Mosaic Simulation Platform</Text>
           <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
-        </View>
-      </Page>
-
-      <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.brand}>Mosaic</Text>
-            <Text style={styles.subtitle}>Artifact Evidence</Text>
-          </View>
-        </View>
-
-        {networkImage && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Social Network Structure</Text>
-            <View style={styles.imageContainer}>
-              <Image src={networkImage} style={styles.image} />
-            </View>
-          </View>
-        )}
-
-        {umapImage && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Final Accent Space (UMAP)</Text>
-            <View style={styles.imageContainer}>
-              <Image src={umapImage} style={styles.image} />
-            </View>
-          </View>
-        )}
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Metric Definitions</Text>
-          <View style={styles.definition}>
-            <Text style={styles.defTerm}>Consensus Tolerance</Text>
-            <Text style={styles.defDesc}>The simulation halts when all agents are within a fixed maximum pairwise distance threshold, avoiding false diversity driven by floating-point KMeans noise.</Text>
-          </View>
-          <View style={styles.definition}>
-            <Text style={styles.defTerm}>Diversity (H)</Text>
-            <Text style={styles.defDesc}>Shannon entropy calculated across accent clusters. At consensus, H is exactly 0.0.</Text>
-          </View>
-          <View style={styles.definition}>
-            <Text style={styles.defTerm}>Pairwise Distance (D)</Text>
-            <Text style={styles.defDesc}>The average L2 separation between all pairs of agent accent vectors.</Text>
-          </View>
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Run ID: {result.run_id}</Text>
-          <Text style={styles.footerText}>Page 2 of 2</Text>
         </View>
       </Page>
     </Document>

@@ -1,6 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useD3Network } from '../../hooks/useD3Network';
-import { useResizeObserver } from '../../hooks/useResizeObserver';
 import type { AgentState, NetworkEdge, NetworkNode } from '../../types/models';
 
 export function NetworkGraph({ nodes, edges, agentStates }: { nodes: NetworkNode[]; edges: NetworkEdge[]; agentStates: AgentState[] }) {

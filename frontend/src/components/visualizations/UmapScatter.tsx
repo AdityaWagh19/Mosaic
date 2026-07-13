@@ -1,6 +1,5 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useD3Scatter } from '../../hooks/useD3Scatter';
-import { useResizeObserver } from '../../hooks/useResizeObserver';
 import type { AgentState, UmapResponse } from '../../types/models';
 
 function stageName(index: number, total: number) { if (index === 0) return 'Initial state'; if (index === total - 1) return 'Final state'; if (index <= Math.floor((total - 1) / 2)) return 'Early interaction'; return 'Mid-run'; }
