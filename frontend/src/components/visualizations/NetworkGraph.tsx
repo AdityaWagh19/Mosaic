@@ -4,11 +4,13 @@ import { useResizeObserver } from '../../hooks/useResizeObserver';
 import type { AgentState, NetworkEdge, NetworkNode } from '../../types/models';
 
 export function NetworkGraph({ nodes, edges, agentStates }: { nodes: NetworkNode[]; edges: NetworkEdge[]; agentStates: AgentState[] }) {
-  const container = useRef<HTMLDivElement>(null); 
-  const { width, height } = useResizeObserver(container);
   const [selectedId, setSelectedId] = useState<number | null>(null); 
   const [showLabels, setShowLabels] = useState(false); 
   const [resetKey, setResetKey] = useState(0);
+  
+  // Fixed internal coordinate system
+  const width = 800;
+  const height = 500;
   
   // Pagination state for the data table
   const [page, setPage] = useState(0);
@@ -39,8 +41,8 @@ export function NetworkGraph({ nodes, edges, agentStates }: { nodes: NetworkNode
       </div>
       
       <div className="network-layout">
-        <div className="viz" ref={container} style={{ border: '1px solid var(--color-hairline)', borderRadius: 'var(--radius-cards)', overflow: 'hidden' }}>
-          <svg key={resetKey} ref={svg} width="100%" height="100%" role="img" aria-label="Interactive final network graph">
+        <div className="viz" style={{ border: '1px solid var(--color-hairline)', borderRadius: 'var(--radius-cards)', overflow: 'hidden' }}>
+          <svg key={resetKey} ref={svg} viewBox={`0 0 ${width} ${height}`} width="100%" height="100%" role="img" aria-label="Interactive final network graph">
             <title>Final social network graph</title>
             <desc>Select a speaker to inspect its community, centrality, cluster, and accent dimensions.</desc>
           </svg>
