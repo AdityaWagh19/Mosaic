@@ -1,7 +1,7 @@
 # Mosaic — System Architecture
 
 This document defines all modules, their responsibilities, interfaces, and the
-data flow between them. It reflects the implemented state as of Phase 7.
+data flow between them. It reflects the implemented state as of Phase 8.
 
 ---
 
@@ -137,10 +137,12 @@ Mosaic/
 ├── runs/                  # Auto-created; gitignored; one dir per run
 │   └── .gitkeep
 │
-├── docs/                  # Background research reports (3 markdown files)
-├── notebooks/             # Placeholder; demo.ipynb planned for Phase 8
+├── deploy/                # Deployment scripts (EC2 setup, Nginx config, systemd)
+├── docs/                  # Background research reports
+├── notebooks/             # Jupyter notebooks (demo.ipynb walkthrough)
+├── research-papers/       # PDFs of academic papers and foundational literature
 ├── project-docs/          # All design and specification documents
-├── .github/               # GitHub Actions workflows (Phase 8)
+├── .github/               # GitHub Actions workflows (CI, deploy, pages)
 ├── pyproject.toml
 ├── requirements.txt
 └── README.md
@@ -408,4 +410,4 @@ Run all tests: `pytest tests/ -v`
 
 ---
 
-*Last updated: 2026-07-11 — Phase 7 (React Frontend) complete*
+*Last updated: 2026-07-13 — Phase 8 (Integration + Polish) complete*
