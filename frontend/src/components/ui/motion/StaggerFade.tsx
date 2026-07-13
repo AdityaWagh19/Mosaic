@@ -13,7 +13,8 @@ export function StaggerFade({ children, stagger = 0.06 }: { children: ReactNode[
         <motion.div
           key={i}
           initial="hidden"
-          animate="visible"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-20px' }}
           variants={variants}
           transition={{ delay: i * stagger, duration: 0.2, ease: 'easeOut' }}
           style={{ width: '100%', height: '100%', display: 'flex' }}
