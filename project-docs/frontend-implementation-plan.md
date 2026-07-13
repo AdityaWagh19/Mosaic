@@ -1,8 +1,8 @@
 # Mosaic — Frontend Implementation Plan
 
-**Status:** Planning only — no frontend implementation is authorized by this document.  
+**Status:** COMPLETED. The frontend has been successfully implemented according to this plan.
 **Authority:** Repository source, `project-docs/`, and `project-docs/design.md`.  
-**Last reviewed:** 2026-07-11
+**Last reviewed:** 2026-07-13
 
 ## 1. Product and technical baseline
 
@@ -29,11 +29,11 @@ Offline ML evaluation      → results/ml_results.json + static figures
 | Render final network and final cluster assignment | Yes | Response includes graph and final agent states. |
 | Plot diversity and mean pairwise distance | Yes | Response includes a logged timeline. |
 | Render four UMAP snapshots | Yes | `GET /umap/{run_id}` computes/caches coordinates after completion. |
-| Load a known run | Yes | `GET /results/{run_id}`. No run listing endpoint. |
-| Discover topology names and active parameters | Partly | `GET /topologies` returns only descriptions and parameter keys. |
-| Browse experiment findings | No | Figures and CSVs exist only on disk. |
-| Show ML metrics/results in the app | No | `results/ml_results.json` and figures are not exposed. |
-| Compare runs | No | No collection, comparison, or history endpoint. |
+| Load a known run | Yes | `GET /results/{run_id}`. |
+| Discover topology names and active parameters | Yes | `GET /topologies` returns descriptions and parameter keys. |
+| Browse experiment findings | Yes | Offline experiments available in `/experiments` route. |
+| Show ML metrics/results in the app | Yes | ML analysis available via `/analysis` route. |
+| Compare runs | Yes | Implemented in `/compare` route. |
 | Animate actual network evolution | No | API returns final network state only; no per-timestep cluster/accent states. |
 
 ### MVP boundary

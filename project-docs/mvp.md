@@ -14,7 +14,7 @@ makes Mosaic a real project — all subsequent phases build on top of it.
 - `AccentAgent` with 6-dimensional phonetic accent vector and prestige-weighted update rule
 - `MosaicModel` with edge-based random interaction scheduling
 - `NetworkGenerator` producing all four topologies: ER, WS, BA, SBM
-- Entropy-based convergence detection (δ = 0.001 for 200 consecutive steps)
+- Pairwise-distance consensus and windowed stationarity detection
 - Hard timestep cutoff at T = 10,000
 
 ### Data Pipeline
@@ -106,8 +106,8 @@ Phase 1 is complete when **all** of the following are true:
 | Convergence never triggered for some configs (θ too small) | Medium | Hard cutoff at T=10,000 handles this; flag `converged=False` in metrics |
 | Edge sampling is slow for dense graphs (large E) | Low | Precompute edge list once at init; use numpy for random choice |
 | Animated GIF file size too large for README | Low | Limit to N=100, 50fps, 5s duration; compress with Pillow |
-| k-means for H(t) is slow if refit every 100 steps | Medium | Cache cluster centroids; only refit every 500 steps during simulation |
+| k-means for H(t) is slow if refit every 100 steps | Medium | Cache cluster centroids; only refit for final metric reporting |
 
 ---
 
-*Last updated: 2026-07-09*
+*Last updated: 2026-07-13*
