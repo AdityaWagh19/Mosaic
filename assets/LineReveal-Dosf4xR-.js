@@ -1,0 +1,1 @@
+import{u as o,j as s,ab as a}from"./index-BCUcryYD.js";function u({className:e="",style:i,...t}){const n=o();return s.jsx(a.hr,{className:e,initial:{scaleX:n?1:0},whileInView:{scaleX:1},viewport:{once:!0,margin:"-20px"},transition:{duration:.4,ease:"easeOut"},style:{originX:0,...i},...t})}export{u as L};
