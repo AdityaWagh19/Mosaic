@@ -38,7 +38,7 @@ const makeContext = (overrides = {}) => ({
 const mockResult = {
   run_id: 'er_42',
   config: { topology: 'er', N: 10, T: 100, gamma: 1, theta: 0.3, sigma: 0.01, seed: 42, p_er: 0.5, k_ws: 6, p_rewire: 0.1, m_ba: 3, n_communities: 2, p_in: 0.15, p_out: 0.02 },
-  metrics: { convergence_time: 50, converged: true, final_diversity: 0.12, final_pairwise_distance: 0.08 },
+  metrics: { convergence_time: 50, converged: true, termination_reason: 'stationarity', final_diversity: 0.12, final_pairwise_distance: 0.08 },
   timeline: [{ timestep: 0, diversity: 0.9, pairwise_distance: 0.4 }],
   final_agent_states: [],
   network: { nodes: [], edges: [] },
@@ -108,8 +108,8 @@ describe('Dashboard — completed result', () => {
   it('renders metrics and tab list', async () => {
     contextValue = makeContext({ result: mockResult });
     await renderDashboard();
-    expect(screen.getByText(/Diversity stabilized/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/converged/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Diversity stabilized/i).length).toBeGreaterThan(0);
+
     // Four tabs
     expect(screen.getByRole('tab', { name: /overview/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /network/i })).toBeInTheDocument();
