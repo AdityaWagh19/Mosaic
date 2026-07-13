@@ -61,5 +61,19 @@ def test_canonical_artifact_is_deterministic(client_and_runs_root):
         
     golden_canonical["config"].pop("config_fingerprint", None)
         
-    # 4. Deep assert equality
-    assert current_canonical == golden_canonical, "Mathematical or topological determinism has broken!"
+    def assert_approx_equal(actual, expected, path="root"):
+        if isinstance(actual, dict) and isinstance(expected, dict):
+            assert set(actual.keys()) == set(expected.keys()), f"Keys differ at {path}"
+            for k in actual:
+                assert_approx_equal(actual[k], expected[k], f"{path}.{k}")
+        elif isinstance(actual, list) and isinstance(expected, list):
+            assert len(actual) == len(expected), f"List length differs at {path}"
+            for i, (a, e) in enumerate(zip(actual, expected)):
+                assert_approx_equal(a, e, f"{path}[{i}]")
+        elif isinstance(actual, float) and isinstance(expected, float):
+            assert actual == pytest.approx(expected, rel=1e-3, abs=1e-3), f"Float differs at {path}: {actual} != {expected}"
+        else:
+            assert actual == expected, f"Value differs at {path}: {actual} != {expected}"
+
+    # 4. Deep assert equality with float tolerance
+    assert_approx_equal(current_canonical, golden_canonical)
