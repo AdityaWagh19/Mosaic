@@ -152,10 +152,13 @@ Mosaic/
 ├── viz/              Publication-oriented matplotlib/seaborn figures and GIF generation
 ├── api/              FastAPI application and Pydantic schemas
 ├── frontend/         React, TypeScript, Vite, D3, and Recharts application
+├── deploy/           Deployment scripts (EC2 setup, Nginx config, systemd)
 ├── runs/             Per-run artifacts; generated locally
 ├── results/          Aggregate metrics, ML summary, and generated figures
 ├── tests/            Simulation and API test suite
+├── notebooks/        Jupyter notebooks (demo.ipynb walkthrough)
 ├── docs/             Background research reports and academic literature review
+├── research-papers/  PDFs of academic papers and foundational literature
 └── project-docs/     Product, model, architecture, experiment, ML, and design documents
 ```
 
