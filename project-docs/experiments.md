@@ -10,7 +10,7 @@ least one research question from `context.md`.
 
 - **Monte Carlo replicates:** 25 runs per experimental condition
 - **Reporting:** mean ± SD across runs unless stated otherwise
-- **Default config:** N=200, T=10,000, θ=0.30, γ=1.0, σ=0.01, log_every=100
+- **Default config:** N=200, T=10,000, θ=0.30, γ=1.0, σ=0.01, initial_σ=0.15, W=20, ε_max=1e-4, ε_dist=1e-6, log_every=100
 - **Figures:** saved to `results/figures/` as PNG at 300 DPI
 - **Run outputs:** stored in `runs/` per `architecture.md §3.5`
 - **Seed scheme:** base seed + run index (seed 42, 43, 44, ...)
