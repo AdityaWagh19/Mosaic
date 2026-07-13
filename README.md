@@ -87,7 +87,7 @@ if ||a_speaker - a_listener|| < theta:
     )
 ```
 
-The model logs accent states every `log_every` steps and stops when diversity is stable or when it reaches the maximum timestep.
+The model logs accent states every `log_every` steps and stops when consensus is reached (noiseless), a stationary equilibrium is found (noisy), or when it reaches the maximum timestep.
 
 ### Network topologies
 

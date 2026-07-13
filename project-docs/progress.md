@@ -366,4 +366,29 @@ Removed 17 tracked files that were obsolete or orphaned:
 
 ---
 
-*Last updated: 2026-07-11 — Phase 7 (React Frontend) complete. Phase 8 (Integration + Polish) next.*
+## 2026-07-13 — Plan 8 (Integration + Polish): Complete
+
+### What Was Built
+
+**Backend Convergence Refactoring:**
+Fixed the critical phantom diversity bug by eliminating KMeans entropy checks for convergence. Implemented strict separation between:
+- **Consensus:** Triggered when `sigma == 0` (noiseless), requiring absolute pairwise distance across all agents to fall below `epsilon_distance` (1e-6).
+- **Stationarity:** Triggered when `sigma > 0` (noisy), requiring maximum agent displacement over a sliding window `W` (20) to remain below `epsilon_max` (1e-4).
+- Added explicit `termination_reason` metrics to the API response.
+
+**Frontend UX Polish:**
+- Eliminated disruptive dark mode alerts.
+- Fixed broken mobile hero illustrations in CSS.
+- Added structured hover states and transition timings across all interactive elements (buttons, cards, links).
+- Implemented robust PDF reporting via `html2canvas` and `jspdf` (`frontend/src/utils/capture.ts`).
+
+**Property Testing:**
+- Rigorous tests added (`tests/test_interactions.py`) to verify update rules, bounds clipping, and suppressed noise during rejected interactions.
+
+**Repository Sanitization:**
+- Scrubbed all leftover UI recordings, scratch scripts, cache directories, and obsolete planning markdown files.
+- Renamed `research/` to `docs/` for better academic organization.
+
+---
+
+*Last updated: 2026-07-13 — Phase 8 (Integration + Polish) complete. Phase 9 (Future Work) next.*

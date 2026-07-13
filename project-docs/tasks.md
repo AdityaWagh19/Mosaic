@@ -119,17 +119,26 @@ Status: `[ ]` not started · `[/]` in progress · `[x]` done
 
 ---
 
-## Plan 8 — Integration + Polish [ ] IN PROGRESS
+## Plan 8 — Integration + Polish ✅ COMPLETE
 
-- [ ] `notebooks/demo.ipynb` — narrative walkthrough of one full run
-- [ ] `.github/workflows/tests.yml` — CI pipeline (pytest + frontend build)
-- [ ] End-to-end smoke test: POST /run → frontend render
+- [x] Backend Convergence Fixes: Distinct Stationarity vs. Consensus tracking
+- [x] Exact API termination `reason` and timeline interaction fraction tracking
+- [x] Property testing for interaction and clipping bounds (`tests/test_interactions.py`)
+- [x] Frontend UX Audit: Remove dark mode warning, fix mobile layouts, add structured hover states
+- [x] Add PDF Report Export capability for run summaries (`frontend/src/utils/capture.ts`)
+- [x] `notebooks/demo.ipynb` — narrative walkthrough of one full run
+- [x] End-to-end smoke test: POST /run → frontend render
+- [x] Accessibility audit (keyboard nav, ARIA labels, color contrast)
+- [x] Final README update with convergence conditions
+
+---
+
+## Plan 9 — Future Work [ ] IN PROGRESS
+- [ ] Implement CI pipeline (`.github/workflows/tests.yml`)
 - [ ] Error boundary + graceful degradation for API failures
 - [ ] Loading skeleton states for all data-fetching components
-- [ ] Accessibility audit (keyboard nav, ARIA labels, color contrast)
 - [ ] Performance: lazy-load D3/Recharts only when tab is active
 - [ ] SEO: meta descriptions, og:image, canonical URLs for each page
-- [ ] Final README update with screenshots and GIF embed
 - [ ] Version tag: `git tag v1.0.0`
 
 ---

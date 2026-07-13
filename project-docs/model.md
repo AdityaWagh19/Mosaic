@@ -161,15 +161,13 @@ element-wise to keep all dimensions within valid normalised range.
 
 ## 7. Convergence Criterion
 
-The simulation terminates when one of two conditions is met:
+The simulation terminates when one of three conditions is met:
 
-1. **Entropy convergence:** Shannon diversity H(t) changes by less than δ = 0.001
-   for 200 consecutive timesteps
-2. **Max steps reached:** T = 10,000 timesteps (hard cutoff)
+1. **Perfect Consensus:** When noise `sigma == 0`, the system reaches consensus if the maximum pairwise distance between all agents is `<= epsilon_distance` (default `1e-6`).
+2. **Stationary Distribution:** When noise `sigma > 0`, perfect consensus is impossible. The system reaches a stationary equilibrium if the maximum displacement of any agent over a window of `W` (default 20) logged timesteps is `<= epsilon_max` (default `1e-4`).
+3. **Max steps reached:** `T = 10,000` timesteps (hard cutoff).
 
-The convergence timestep `t_conv` is recorded as a primary output metric. If the
-simulation hits the hard cutoff without converging, `t_conv = T` and the run is
-flagged as `converged = False`.
+The convergence timestep `t_conv` is recorded alongside an exact `termination_reason`. If the simulation hits the hard cutoff without converging, it is flagged as `Maximum interactions reached`.
 
 ---
 
