@@ -1,0 +1,1 @@
+import{u as a,j as o,aa as s}from"./index-Br481DcX.js";function u({className:e="",style:i,...t}){const n=a();return o.jsx(s.hr,{className:e,initial:{scaleX:n?1:0},whileInView:{scaleX:1},viewport:{once:!0,margin:"-20px"},transition:{duration:.4,ease:"easeOut"},style:{originX:0,...i},...t})}export{u as L};
