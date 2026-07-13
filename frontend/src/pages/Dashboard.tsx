@@ -114,5 +114,28 @@ function EmptyState() {
     </div>
   ); 
 }
-function SimulationLoading() { return <div className="empty loading-state" aria-live="polite"><div><span className="spinner" /><p className="eyebrow">SIMULATION IN PROGRESS</p><h2>Building your result.</h2><p>The model is preparing the network, simulating speaker interactions, and assembling the visual evidence.</p><ol className="loading-steps"><li className="is-active">Build the social network</li><li>Simulate local influence</li><li>Prepare graphs and projections</li></ol></div></div>; }
+function SimulationLoading() {
+  const { result, umap } = useSimulation();
+  
+  // Step 1: Default (start)
+  // Step 2: Receiving timeline snapshots
+  // Step 3: Received UMAP or finishing up
+  const step = umap ? 3 : (result?.timeline?.length ? 2 : 1);
+
+  return (
+    <div className="empty loading-state" aria-live="polite">
+      <div>
+        <span className="spinner" />
+        <p className="eyebrow">SIMULATION IN PROGRESS</p>
+        <h2>Building your result.</h2>
+        <p>The model is preparing the network, simulating speaker interactions, and assembling the visual evidence.</p>
+        <ol className="loading-steps">
+          <li className={step >= 1 ? "is-active" : ""}>Build the social network</li>
+          <li className={step >= 2 ? "is-active" : ""}>Simulate local influence</li>
+          <li className={step >= 3 ? "is-active" : ""}>Prepare graphs and projections</li>
+        </ol>
+      </div>
+    </div>
+  );
+}
 function interpretRun(result: RunResponse) { const { metrics } = result; return metrics.converged ? (metrics.termination_reason === 'stationarity' ? `The population stabilized into a noisy equilibrium after ${metrics.convergence_time} steps. Final diversity was ${metrics.final_diversity.toFixed(3)}.` : `All agent accents reached the model's consensus tolerance after ${metrics.convergence_time} steps. Final diversity was ${metrics.final_diversity.toFixed(3)}.`) : `The population did not reach the model's convergence criteria within the ${result.config.T.toLocaleString()}-step limit. Final diversity was ${metrics.final_diversity.toFixed(3)}; inspect the trajectory to distinguish persistent groups from continuing movement.`; }
