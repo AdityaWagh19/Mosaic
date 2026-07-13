@@ -105,8 +105,8 @@
   gap: 16px;
 }
 
-.network-layout .viz {
-  min-height: 500px;
+.viz {
+  height: 500px;
 }
 
 .agent-inspector {
