@@ -134,7 +134,7 @@ Status: `[ ]` not started · `[/]` in progress · `[x]` done
 ---
 
 ## Plan 9 — Future Work [ ] IN PROGRESS
-- [ ] Implement CI pipeline (`.github/workflows/tests.yml`)
+- [x] Implement CI pipeline (`.github/workflows/ci.yml`, `deploy.yml`, `pages.yml`)
 - [ ] Error boundary + graceful degradation for API failures
 - [ ] Loading skeleton states for all data-fetching components
 - [ ] Performance: lazy-load D3/Recharts only when tab is active
@@ -151,4 +151,4 @@ Status: `[ ]` not started · `[/]` in progress · `[x]` done
 
 ---
 
-*Last updated: 2026-07-11 — Phase 7 complete. Phase 8 starting next.*
+*Last updated: 2026-07-13 — Phase 8 complete. Phase 9 in progress.*

@@ -264,7 +264,7 @@ the same 2D embedding space. Produces a 4-panel figure showing accent space coll
 
 **Request:**
 ```json
-{ "N": 200, "topology": "watts_strogatz", "T": 5000, "gamma": 1.0, "theta": 0.3 }
+{ "N": 200, "topology": "watts_strogatz", "T": 5000, "gamma": 1.0, "theta": 0.3, "sigma": 0.01, "initial_sigma": 0.15, "W": 20, "epsilon_max": 1e-4, "epsilon_distance": 1e-6 }
 ```
 
 **Response (`RunResponse`):**
@@ -275,6 +275,7 @@ the same 2D embedding space. Produces a 4-panel figure showing accent space coll
   "metrics": {
     "convergence_time": 4320,
     "converged": true,
+    "termination_reason": "stationarity",
     "final_diversity": 0.38,
     "final_pairwise_distance": 0.14
   },

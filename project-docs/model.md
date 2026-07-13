@@ -261,6 +261,8 @@ timestep, agent_id, community_id, centrality, d0, d1, d2, d3, d4, d5
 {
   "N": 200, "topology": "watts_strogatz", "T": 10000,
   "gamma": 1.0, "theta": 0.3, "sigma": 0.01,
+  "initial_sigma": 0.15, "W": 20,
+  "epsilon_max": 1e-4, "epsilon_distance": 1e-6,
   "seed": 42, "n_runs": 25, "log_every": 100
 }
 ```
@@ -270,6 +272,7 @@ timestep, agent_id, community_id, centrality, d0, d1, d2, d3, d4, d5
 {
   "convergence_time": 4320,
   "converged": true,
+  "termination_reason": "stationarity",
   "final_diversity": 0.38,
   "final_pairwise_distance": 0.14
 }
@@ -290,4 +293,4 @@ timestep, agent_id, community_id, centrality, d0, d1, d2, d3, d4, d5
 
 ---
 
-*Last updated: 2026-07-09*
+*Last updated: 2026-07-13*
