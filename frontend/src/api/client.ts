@@ -18,8 +18,8 @@ export const runSimulation = (config: SimConfig) => request<RunResponse>('/run',
 export const runSimulationStream = async (
   config: SimConfig,
   handlers: {
-    onStart: (data: any) => void;
-    onSnapshot: (data: any) => void;
+    onStart: (data: unknown) => void;
+    onSnapshot: (data: unknown) => void;
     onUmap: (data: UmapResponse) => void;
     onComplete: (data: RunResponse) => void;
   }
@@ -53,7 +53,7 @@ export const runSimulationStream = async (
           else if (payload.event === 'snapshot') handlers.onSnapshot(payload.data);
           else if (payload.event === 'umap') handlers.onUmap(payload.data);
           else if (payload.event === 'complete') handlers.onComplete(payload.data);
-        } catch (e) {
+        } catch {
           console.error("Failed to parse chunk", line);
         }
       }

@@ -21,7 +21,7 @@ export function LandingPage({ nav }: { nav: React.ReactNode }) {
           </div>
         </div>
         <div className="hero-illustration">
-          {/* @ts-ignore */}
+          {/* @ts-expect-error spline web component is not in React types */}
           <spline-viewer url="https://prod.spline.design/JLyrcIuXRvoKHeiE/scene.splinecode"></spline-viewer>
         </div>
       </section>
