@@ -104,9 +104,9 @@ The model logs accent states every `log_every` steps and stops when consensus is
 
 | Output | Meaning |
 |---|---|
-| Shannon diversity | Distribution of k-means accent clusters over time. |
+| Shannon diversity | Entropy of k-means accent clusters over time (legacy convergence metric). |
 | Mean pairwise distance | Average distance between agent accent vectors. |
-| Convergence time | First stable diversity point under the model criterion. |
+| Convergence time | Timestep when consensus or stationarity is achieved. |
 | Final network state | Network nodes, centrality, community IDs, and final accent clusters. |
 | UMAP snapshots | Four aligned 2D views of accent-space evolution. |
 
@@ -124,7 +124,7 @@ The web application provides the following routes:
 | `/analysis` | Offline ML benchmark report. |
 | `/guide` | Concise explanation of the method and metrics. |
 
-Completed runs support permalink copying, configuration duplication, JSON/CSV export, UMAP inspection, raw agent-state snapshot playback, and accessible tables for network and chart data.
+Completed runs support permalink copying, configuration duplication, JSON/CSV and PDF export, UMAP inspection, raw agent-state snapshot playback, and accessible tables for network and chart data.
 
 ## Results and interpretation
 
@@ -260,11 +260,16 @@ The Python suite covers configuration, network generation, agent updates, model 
 | Document | Contents |
 |---|---|
 | `project-docs/context.md` | Project rationale, research questions, and scope. |
+| `project-docs/prd.md` | Product Requirements Document. |
+| `project-docs/mvp.md` | Minimum Viable Product scoping and boundaries. |
 | `project-docs/model.md` | Mathematical model and metric definitions. |
 | `project-docs/architecture.md` | Module responsibilities and API architecture. |
 | `project-docs/experiments.md` | Experimental protocol and expected figures. |
 | `project-docs/ml-pipeline.md` | Data, models, evaluation, and scientific interpretation. |
 | `project-docs/design.md` | Frontend visual system. |
+| `project-docs/tasks.md` | Living task list across all development phases. |
+| `project-docs/progress.md` | Living progress and decision log. |
+| `project-docs/research_critique.md` | Critical evaluation of ML experiments and methodologies. |
 | `project-docs/frontend-implementation-plan.md` | Frontend architecture and delivery plan. |
 
 ## Scope
