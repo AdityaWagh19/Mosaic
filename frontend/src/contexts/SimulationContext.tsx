@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
-import { fetchResult, fetchUmap, runSimulation } from '../api/client';
+import { fetchResult, fetchUmap, runSimulationStream } from '../api/client';
 import type { RunResponse, SimConfig, UmapResponse } from '../types/models';
 
 const defaultConfig: SimConfig = { topology: 'watts_strogatz', N: 200, T: 10000, gamma: 1, theta: 0.3, sigma: 0.01, seed: 42, p_er: 0.05, k_ws: 6, p_rewire: 0.1, m_ba: 3, n_communities: 2, p_in: 0.15, p_out: 0.02 };
@@ -20,7 +20,36 @@ export function SimulationProvider({ children }: { children: ReactNode }) {
   const run = useCallback(async (configOverride?: SimConfig) => {
     const configToRun = configOverride ?? config;
     setRunning(true); setError(null); setResult(null); setUmap(null);
-    try { const next = await runSimulation(configToRun); setResult(next); setConfig(next.config); void hydrateUmap(next.run_id); return next; } catch (cause) { setError(cause instanceof Error ? cause.message : 'Simulation failed.'); return null; } finally { setRunning(false); }
+    let finalResult: RunResponse | null = null;
+    let currentResult: Partial<RunResponse> = { config: configToRun, timeline: [], final_agent_states: [], network: { nodes: [], edges: [] } };
+    
+    try {
+      await runSimulationStream(configToRun, {
+        onStart: (data) => {
+          currentResult = { ...currentResult, network: data.network };
+          // Allow UI to mount the loading graphs
+          setResult(currentResult as RunResponse);
+        },
+        onSnapshot: (data) => {
+          currentResult = { ...currentResult, timeline: [...(currentResult.timeline || []), data] };
+          setResult({ ...currentResult } as RunResponse);
+        },
+        onUmap: (data) => {
+          setUmap(data);
+        },
+        onComplete: (data) => {
+          finalResult = data;
+          setResult(data);
+          setConfig(data.config);
+        }
+      });
+      return finalResult;
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Simulation failed.');
+      return null;
+    } finally {
+      setRunning(false);
+    }
   }, [config]);
   
   const load = useCallback(async (id: string) => { setRunning(true); setError(null); setResult(null); setUmap(null); try { const next = await fetchResult(id); setResult(next); setConfig(next.config); void hydrateUmap(id); } catch (cause) { setError(cause instanceof Error ? cause.message : 'Run could not be loaded.'); } finally { setRunning(false); } }, []);

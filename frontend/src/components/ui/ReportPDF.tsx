@@ -86,7 +86,7 @@ export function ReportPDF({ result, networkImage, umapImage, timelineImage }: Re
         </View>
 
         {timelineImage && (
-          <View style={styles.section}>
+          <View style={styles.section} break>
             <Text style={styles.sectionTitle}>Evidence over time</Text>
             <View style={{ ...styles.imageContainer, height: 180 }}>
               <Image src={timelineImage} style={styles.image} />
@@ -94,9 +94,27 @@ export function ReportPDF({ result, networkImage, umapImage, timelineImage }: Re
           </View>
         )}
 
-        <View style={styles.footer}>
+        {networkImage && (
+          <View style={styles.section} break>
+            <Text style={styles.sectionTitle}>Social Network</Text>
+            <View style={{ ...styles.imageContainer, height: 250 }}>
+              <Image src={networkImage} style={styles.image} />
+            </View>
+          </View>
+        )}
+
+        {umapImage && (
+          <View style={styles.section} break>
+            <Text style={styles.sectionTitle}>Accent Evolution</Text>
+            <View style={{ ...styles.imageContainer, height: 250 }}>
+              <Image src={umapImage} style={styles.image} />
+            </View>
+          </View>
+        )}
+
+        <View style={styles.footer} fixed>
           <Text style={styles.footerText}>Mosaic Simulation Platform</Text>
-          <Text style={styles.footerText}>Page 1 of 2</Text>
+          <Text style={styles.footerText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>
 

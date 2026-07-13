@@ -316,6 +316,22 @@ def run_simulation(req: RunRequest):
     return _construct_run_response(run_id)
 
 
+@app.post("/run/stream")
+def run_simulation_stream(req: RunRequest):
+    """Run a simulation and stream progress chunks via NDJSON."""
+    from fastapi.responses import StreamingResponse
+    config = SimConfig.from_dict(req.model_dump())
+    
+    log.info("Starting simulation stream: %s", config.run_id)
+    
+    def generate():
+        from simulation.runner import run_single_stream
+        for chunk in run_single_stream(config):
+            yield chunk
+            
+    return StreamingResponse(generate(), media_type="application/x-ndjson")
+
+
 @app.get("/results/{run_id}", response_model=RunResponse)
 def get_results(run_id: str):
     """Retrieve the results of a previously completed run."""

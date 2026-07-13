@@ -12,7 +12,13 @@ export async function captureSvgAsDataUrl(svgElement: SVGSVGElement | null): Pro
       clone.setAttribute('width', String(width));
       clone.setAttribute('height', String(height));
       
-      const xml = new XMLSerializer().serializeToString(clone);
+      // Replace var(--color-*) with actual computed styles so the canvas can render them
+      let xml = new XMLSerializer().serializeToString(clone);
+      const computedStyles = getComputedStyle(document.documentElement);
+      xml = xml.replace(/var\((--[^)]+)\)/g, (_, varName) => {
+        return computedStyles.getPropertyValue(varName).trim() || '#000000';
+      });
+
       const svg64 = btoa(unescape(encodeURIComponent(xml)));
       const b64Start = 'data:image/svg+xml;base64,';
       const image64 = b64Start + svg64;

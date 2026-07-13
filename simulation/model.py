@@ -353,3 +353,130 @@ class MosaicModel(mesa.Model):
         )
 
         return {**metrics_dict, "timeline": timeline}
+
+    def run_stream(self, log: "DataLogger"):
+        import json
+        T = self.config.T
+        log_every = self.config.log_every
+        config = self.config
+
+        timeline = []
+        displacements = []
+        prev_accent_mat = self._get_accent_matrix()
+
+        converged = False
+        termination_reason = "Maximum interactions reached"
+        t_conv = T
+
+        d0, diameter0 = m.pairwise_distance_summary(prev_accent_mat)
+        
+        eligible_edges = 0
+        for i, j in self.edge_list:
+            if np.linalg.norm(self.agents_map[i].accent - self.agents_map[j].accent) < config.theta:
+                eligible_edges += 1
+        eligible_frac0 = eligible_edges / self._n_edges if self._n_edges > 0 else 0.0
+
+        h0, _ = self._compute_h(
+            prev_accent_mat, 0, is_consensus=diameter0 <= config.epsilon_distance
+        )
+        log.log(0, self.agents_map)
+        
+        init_point = {
+            "timestep": 0, 
+            "diversity": round(h0, 6), 
+            "pairwise_distance": round(d0, 6),
+            "accepted_interactions": 0,
+            "rejected_interactions": 0,
+            "eligible_edges_fraction": round(eligible_frac0, 4)
+        }
+        timeline.append(init_point)
+        yield json.dumps({"event": "snapshot", "data": init_point}) + "\n"
+
+        if config.sigma == 0 and diameter0 <= config.epsilon_distance:
+            converged = True
+            termination_reason = "Consensus reached"
+            t_conv = 0
+
+        for t in range(1, T + 1):
+            if converged:
+                break
+            self.step()
+
+            if t % log_every == 0:
+                accent_mat = self._get_accent_matrix()
+                d, diameter = m.pairwise_distance_summary(accent_mat)
+                
+                max_disp = float(np.max(np.linalg.norm(accent_mat - prev_accent_mat, axis=1)))
+                displacements.append(max_disp)
+                prev_accent_mat = accent_mat
+                
+                eligible_edges = 0
+                for i, j in self.edge_list:
+                    if np.linalg.norm(self.agents_map[i].accent - self.agents_map[j].accent) < config.theta:
+                        eligible_edges += 1
+                eligible_frac = eligible_edges / self._n_edges if self._n_edges > 0 else 0.0
+
+                h, _ = self._compute_h(
+                    accent_mat, t, is_consensus=(config.sigma == 0 and diameter <= config.epsilon_distance)
+                )
+
+                log.log(t, self.agents_map)
+                
+                point = {
+                    "timestep": t,
+                    "diversity": round(h, 6),
+                    "pairwise_distance": round(d, 6),
+                    "accepted_interactions": self._accepted_since_log,
+                    "rejected_interactions": self._rejected_since_log,
+                    "eligible_edges_fraction": round(eligible_frac, 4)
+                }
+                timeline.append(point)
+                yield json.dumps({"event": "snapshot", "data": point}) + "\n"
+                
+                self._accepted_since_log = 0
+                self._rejected_since_log = 0
+
+                if config.sigma == 0:
+                    if diameter <= config.epsilon_distance:
+                        converged = True
+                        termination_reason = "Consensus reached"
+                        t_conv = t
+                        break
+                else:
+                    if len(displacements) >= config.W:
+                        if all(disp <= config.epsilon_max for disp in displacements[-config.W:]):
+                            converged = True
+                            termination_reason = "Stationary distribution"
+                            t_conv = t
+                            break
+
+        final_accent_mat = self._get_accent_matrix()
+        final_d, final_diameter = m.pairwise_distance_summary(final_accent_mat)
+        final_h, _ = self._compute_h(
+            final_accent_mat,
+            t_conv,
+            is_consensus=(config.sigma == 0 and final_diameter <= config.epsilon_distance),
+        )
+
+        metrics_dict = {
+            "run_id":                  log.run_id,
+            "topology":                config.topology,
+            "gamma":                   config.gamma,
+            "theta":                   config.theta,
+            "sigma":                   config.sigma,
+            "seed":                    config.seed,
+            "N":                       config.N,
+            "convergence_time":        t_conv,
+            "converged":               converged,
+            "termination_reason":      termination_reason,
+            "final_diversity":         round(final_h, 6),
+            "final_pairwise_distance": round(final_d, 6),
+        }
+
+        log.close(metrics_dict, timeline)
+        logger.info(
+            "Run %s complete | %s | t_conv=%d | H=%.4f | D=%.4f",
+            log.run_id, termination_reason, t_conv, final_h, final_d,
+        )
+        
+        yield json.dumps({"event": "complete", "data": {**metrics_dict, "timeline": timeline}}) + "\n"

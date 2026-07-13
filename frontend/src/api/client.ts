@@ -14,6 +14,54 @@ export const fetchTopologies = () => request<Record<string, TopologyInfo>>('/top
 export const runSimulation = (config: SimConfig) => request<RunResponse>('/run', {
   method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config),
 });
+
+export const runSimulationStream = async (
+  config: SimConfig,
+  handlers: {
+    onStart: (data: any) => void;
+    onSnapshot: (data: any) => void;
+    onUmap: (data: UmapResponse) => void;
+    onComplete: (data: RunResponse) => void;
+  }
+) => {
+  const response = await fetch(`${API_BASE}/run/stream`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config),
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(typeof body.detail === 'string' ? body.detail : 'Request could not be completed.');
+  }
+  if (!response.body) throw new Error('ReadableStream not supported.');
+  
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder('utf-8');
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    
+    let boundary = buffer.indexOf('\n');
+    while (boundary !== -1) {
+      const line = buffer.slice(0, boundary).trim();
+      buffer = buffer.slice(boundary + 1);
+      if (line) {
+        try {
+          const payload = JSON.parse(line);
+          if (payload.event === 'start') handlers.onStart(payload.data);
+          else if (payload.event === 'snapshot') handlers.onSnapshot(payload.data);
+          else if (payload.event === 'umap') handlers.onUmap(payload.data);
+          else if (payload.event === 'complete') handlers.onComplete(payload.data);
+        } catch (e) {
+          console.error("Failed to parse chunk", line);
+        }
+      }
+      boundary = buffer.indexOf('\n');
+    }
+  }
+};
+
 export const fetchResult = (runId: string) => request<RunResponse>(`/results/${encodeURIComponent(runId)}`);
 export const fetchUmap = (runId: string) => request<UmapResponse>(`/umap/${encodeURIComponent(runId)}`);
 export const fetchRuns = (cursor?: string) => request<{ items: RunSummary[]; total: number; next_cursor: string | null }>(`/runs${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`);

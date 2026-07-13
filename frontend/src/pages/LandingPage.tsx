@@ -3,7 +3,7 @@ import { SpotlightCard } from '../components/ui/motion/SpotlightCard';
 import { StaggerFade } from '../components/ui/motion/StaggerFade';
 import { BlurReveal } from '../components/ui/motion/BlurReveal';
 import { LineReveal } from '../components/ui/motion/LineReveal';
-import { IllustrationNetwork } from '../components/ui/IllustrationNetwork';
+
 import { Network, TrendingDown, Hash, GitBranch, Star, Users } from 'lucide-react';
 
 export function LandingPage({ nav }: { nav: React.ReactNode }) {
@@ -21,7 +21,8 @@ export function LandingPage({ nav }: { nav: React.ReactNode }) {
           </div>
         </div>
         <div className="hero-illustration">
-          <IllustrationNetwork />
+          {/* @ts-ignore */}
+          <spline-viewer url="https://prod.spline.design/JLyrcIuXRvoKHeiE/scene.splinecode"></spline-viewer>
         </div>
       </section>
 
