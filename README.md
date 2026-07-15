@@ -1,6 +1,7 @@
 # Mosaic
 
 **Live Demo:** [https://mosaic-research.duckdns.org/](https://mosaic-research.duckdns.org/)
+**Demo Video:** [Mosaic Demo](https://drive.google.com/file/d/1_97bJE53eVr6HV-aGjQ3HcFqMhkYMnID/view?usp=drive_link)
 
 People change how they speak depending on who they talk to. Over time, those small shifts accumulate into dialects: whole communities that sound like each other and different from everyone else. Mosaic simulates that process.
 
